@@ -63,9 +63,11 @@ void tcMatchingEngine::executeTrade(tsOrder* apsTaker, tsOrder* apsMaker, uint32
     apsTaker->mnRemaining -= anQuantity;
     apsMaker->mnRemaining -= anQuantity;
 
+    #ifdef DEBUG
     std::cout << "Trade: " << anQuantity
               << " @ " << apsMaker->mnPriceInTicks * Constants::DOLLARS_PER_TICK
               << " (taker " << apsTaker->mnId
               << " vs maker " << apsMaker->mnId << ")"
               << std::endl;
+    #endif
 }

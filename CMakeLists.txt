@@ -1,24 +1,28 @@
 cmake_minimum_required(VERSION 3.16)
 
-# Project name
 project(OrderBookApp)
 
-# Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native -flto")
 
-add_executable(order_book_app
-    src/Main.cpp
-    src/tcPriceLevel.cpp
-    src/tcOrderBook.cpp
-    src/tcMatchingEngine.cpp
-    src/tcOrderIntake.cpp
+# Add subdirectories (build libraries)
+add_subdirectory(OrderBook)
+add_subdirectory(Benchmarking)
+
+# Main executable
+add_executable(order_book_app Main.cpp)
+
+target_link_libraries(order_book_app
+    PRIVATE
+        OrderBookLib
 )
 
-target_include_directories(order_book_app PRIVATE inc)
+# Benchmarking executable
+add_executable(benchmark_app BenchmarkingMain.cpp)
 
-if (MSVC)
-    target_compile_options(order_book_app PRIVATE /W4)
-else()
-    target_compile_options(order_book_app PRIVATE -Wall -Wextra -Wpedantic)
-endif()
+target_link_libraries(benchmark_app
+    PRIVATE
+        OrderBookLib
+        BenchmarkingLib
+)

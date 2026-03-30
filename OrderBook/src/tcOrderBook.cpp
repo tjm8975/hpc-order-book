@@ -45,7 +45,9 @@ void tcOrderBook::removeOrder(uint64_t anId)
     }
     else
     {
+        #ifdef DEBUG
         std::cout << "Order ID " << anId << " not found for removal." << std::endl;
+        #endif
     }
 }
 
@@ -71,6 +73,7 @@ tcPriceLevel* tcOrderBook::getBestBid(void)
 
 void tcOrderBook::printOrderBook(void) const
 {
+    #ifdef DEBUG
     std::cout << "Order Book:" << std::endl;
 
     std::cout << "Bids:" << std::endl;
@@ -84,4 +87,5 @@ void tcOrderBook::printOrderBook(void) const
     {
         std::cout << "Price: " << price << ", Total Quantity: " << level.getTotalQuantity() << std::endl;
     }
+    #endif
 }
