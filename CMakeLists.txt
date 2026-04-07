@@ -4,6 +4,8 @@ project(OrderBookApp)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# cmake -DCMAKE_BUILD_TYPE=Release ..
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native -flto")
 
 # Add subdirectories (build libraries)
@@ -26,3 +28,7 @@ target_link_libraries(benchmark_app
         OrderBookLib
         BenchmarkingLib
 )
+
+# mkdir build && cd build
+# cmake -DCMAKE_BUILD_TYPE=Release ..
+# make

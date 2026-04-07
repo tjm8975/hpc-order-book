@@ -3,6 +3,7 @@
 #include "tcOrderGenerator.hpp"
 
 #include <chrono>
+#include <thread>
 
 tcBenchmarkRunner::tcBenchmarkRunner(tcOrderBook& arcOrderBook, tcMatchingEngine& arcMatchingEngine) :
     mrcOrderBook(arcOrderBook),
@@ -11,21 +12,55 @@ tcBenchmarkRunner::tcBenchmarkRunner(tcOrderBook& arcOrderBook, tcMatchingEngine
 {
 }
 
-tsMetrics tcBenchmarkRunner::run(uint64_t anNumOrders)
+tsMetrics tcBenchmarkRunner::runThroughput(uint64_t anNumOrders)
 {
     tcOrderGenerator lsOrderGen;
     tsMetrics lsMetrics;
 
-    auto startTime = std::chrono::high_resolution_clock::now();
+    auto lnStart = std::chrono::high_resolution_clock::now();
 
-    for (uint64_t i = 0; i < anNumOrders; ++i) {
-        auto order = lsOrderGen.generateOrder(mnNumOrdersProcessed++);
-        mcOrderIntake.submitOrder(order.mnId, order.mnQuantity, order.mrPrice, order.mbIsBuy);
-        lsMetrics.lnTotalOrders++;
+    for (uint64_t i = 0; i < anNumOrders; i++)
+    {
+        auto lsOrder = lsOrderGen.generateOrder(mnNumOrdersProcessed++);
+        mcOrderIntake.submitOrder(lsOrder.mnId, lsOrder.mnQuantity, lsOrder.mrPrice, lsOrder.mbIsBuy);
+        lsMetrics.mnTotalOrders++;
     }
 
-    auto endTime = std::chrono::high_resolution_clock::now();
-    lsMetrics.lrTotalTimeSec = std::chrono::duration<double>(endTime - startTime).count();
+    auto lnEnd = std::chrono::high_resolution_clock::now();
+    lsMetrics.mrTotalTimeSec = std::chrono::duration<double>(lnEnd - lnStart).count();
+
+    return lsMetrics;
+}
+
+tsMetrics tcBenchmarkRunner::runPercentile(uint64_t anNumOrders)
+{
+    tcOrderGenerator lsOrderGen;
+    tsMetrics lsMetrics;
+    const int lnSampleRate = 10; // Sample every 10th order for latency measurement
+
+    lsMetrics.mcLatenciesNs.reserve(anNumOrders / lnSampleRate); // reserve space for sampled latencies
+
+    for (uint64_t i = 0; i < anNumOrders; i++)
+    {
+        auto lsOrder = lsOrderGen.generateOrder(mnNumOrdersProcessed++);
+
+        // Sample latency for every 10th order to avoid overhead of timing every single order
+        if (i % lnSampleRate == 0)
+        {
+            auto lnT1 = std::chrono::high_resolution_clock::now();
+            mcOrderIntake.submitOrder(lsOrder.mnId, lsOrder.mnQuantity, lsOrder.mrPrice, lsOrder.mbIsBuy);
+            auto lnT2 = std::chrono::high_resolution_clock::now();
+
+            double lrNs = std::chrono::duration_cast<std::chrono::nanoseconds>(lnT2 - lnT1).count();
+            lsMetrics.mcLatenciesNs.push_back(lrNs);
+        }
+        else
+        {
+            mcOrderIntake.submitOrder(lsOrder.mnId, lsOrder.mnQuantity, lsOrder.mrPrice, lsOrder.mbIsBuy);
+        }
+
+        lsMetrics.mnTotalOrders++;
+    }
 
     return lsMetrics;
 }

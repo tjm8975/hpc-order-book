@@ -5,24 +5,31 @@
 #include <vector>
 #include <iostream>
 
-int main() {
+int main()
+{
     tcOrderBook lcOrderBook;
     tcMatchingEngine lcMatchingEngine(lcOrderBook);
 
     tcBenchmarkRunner lcRunner(lcOrderBook, lcMatchingEngine);
 
     std::vector<uint64_t> lcTestSizes = {
-        10,
-        100,
         10'000,
         100'000,
-        1'000'000
+        1'000'000,
+        10'000'000,
     };
 
-    for (uint64_t lnSize : lcTestSizes) {
-        std::cout << "\nRunning benchmark with " << lnSize << " orders...\n";
+    // Priming call
+    lcRunner.runThroughput(10'000);
+    lcRunner.runPercentile(10'000);
+    tsMetrics lsMetrics;
 
-        tsMetrics lsMetrics = lcRunner.run(lnSize);
+    for (uint64_t lnSize : lcTestSizes)
+    {
+        lsMetrics = lcRunner.runThroughput(lnSize);
+        lsMetrics.print();
+
+        lsMetrics = lcRunner.runPercentile(lnSize);
         lsMetrics.print();
     }
 
