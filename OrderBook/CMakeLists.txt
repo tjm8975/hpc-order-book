@@ -11,6 +11,9 @@ target_include_directories(OrderBookLib
         ${CMAKE_CURRENT_SOURCE_DIR}/inc
 )
 
+# Unit tests
+add_subdirectory(unittest)
+
 # Optional: warnings
 if (MSVC)
     target_compile_options(OrderBookLib PRIVATE /W4)

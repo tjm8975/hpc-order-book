@@ -31,6 +31,9 @@ private:
     tsOrder* mpsHead = nullptr;
     tsOrder* mpsTail = nullptr;
     uint32_t mnTotalQuantity = 0;
+
+    // Grant access to private members for unit testing
+    friend class tcPriceLevelUT;
 };
 
 #endif // TCPRICELEVEL_HPP

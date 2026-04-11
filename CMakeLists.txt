@@ -5,8 +5,18 @@ project(OrderBookApp)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# cmake -DCMAKE_BUILD_TYPE=Release ..
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native -flto")
+
+enable_testing()
+
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/52eb8108c5bdec04579160ae17225d66034bd723.zip
+)
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
 
 # Add subdirectories (build libraries)
 add_subdirectory(OrderBook)
@@ -29,6 +39,7 @@ target_link_libraries(benchmark_app
         BenchmarkingLib
 )
 
-# mkdir build && cd build
-# cmake -DCMAKE_BUILD_TYPE=Release ..
+# cmake -S . -B build
+# OPTIONS: -DCMAKE_BUILD_TYPE=Release
 # make
+# ctest

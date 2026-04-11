@@ -17,7 +17,7 @@ public:
 
     void addOrder(tsOrder* apsOrder);
 
-    void removeOrder(uint64_t anId);
+    void removeOrder(uint64_t anId, bool abRemoveFromPriceLevel = true);
 
     tcPriceLevel* getBestAsk(void);
 
@@ -65,6 +65,9 @@ private:
             }
         }
     }
+
+    // Grant access to private members for unit testing
+    friend class tcOrderBookUT;
 };
 
 #endif // TCORDERBOOK_HPP

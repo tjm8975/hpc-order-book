@@ -20,6 +20,9 @@ void tcPriceLevel::add(tsOrder* apsOrder)
 
 void tcPriceLevel::remove(tsOrder* apsOrder)
 {
+    // It is expected that caller will only attempt to remove orders that are
+    // actually on this price level, so no need to verify that here
+    
     if (apsOrder->mpsPrev != nullptr)
     {
         apsOrder->mpsPrev->mpsNext = apsOrder->mpsNext;
@@ -45,9 +48,5 @@ void tcPriceLevel::remove(tsOrder* apsOrder)
 
 void tcPriceLevel::executeTrade(uint32_t anQuantity)
 {
-    if (mpsHead == nullptr)
-    {
-        return; // No orders to execute
-    }
     mnTotalQuantity -= anQuantity;
 }

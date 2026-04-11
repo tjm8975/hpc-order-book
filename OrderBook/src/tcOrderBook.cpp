@@ -26,19 +26,22 @@ void tcOrderBook::addOrder(tsOrder* apsOrder)
     }
 }
 
-void tcOrderBook::removeOrder(uint64_t anId)
+void tcOrderBook::removeOrder(uint64_t anId, bool abRemoveFromPriceLevel)
 {
     auto lcIter = mcOrders.find(anId);
     if (lcIter != mcOrders.end())
     {
-        tsOrder* lpsOrder = lcIter->second.get();
-        if (lpsOrder->mbIsBuy)
+        if (abRemoveFromPriceLevel)
         {
-            removeFromSide<Side::Bid>(lpsOrder);
-        }
-        else
-        {
-            removeFromSide<Side::Ask>(lpsOrder);
+            tsOrder* lpsOrder = lcIter->second.get();
+            if (lpsOrder->mbIsBuy)
+            {
+                removeFromSide<Side::Bid>(lpsOrder);
+            }
+            else
+            {
+                removeFromSide<Side::Ask>(lpsOrder);
+            }
         }
 
         mcOrders.erase(lcIter);  // Deletes object since it's a unique_ptr

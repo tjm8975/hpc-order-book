@@ -19,7 +19,10 @@ void tcMatchingEngine::process(tsOrder* apsIncomingOrder)
     }
     else
     {
-        mrcOrderBook.removeOrder(apsIncomingOrder->mnId);
+        // Remove from book's order map (delete order object) without attempting
+        // to remove from price level since this order was completely filled and
+        // was never added to the price level in the first place
+        mrcOrderBook.removeOrder(apsIncomingOrder->mnId, false);
     }
 }
 
@@ -36,11 +39,6 @@ void tcMatchingEngine::match(tsOrder* apsIncomingOrder)
 
         tsOrder* lpsRestingOrder = lpcBestOppositeLevel->getBestOrder();
 
-        if (lpsRestingOrder == nullptr)
-        {
-            break; // No orders at the best opposite price level
-        }
-
         if ((apsIncomingOrder->mbIsBuy && apsIncomingOrder->mnPriceInTicks < lpsRestingOrder->mnPriceInTicks) ||
             (!apsIncomingOrder->mbIsBuy && apsIncomingOrder->mnPriceInTicks > lpsRestingOrder->mnPriceInTicks))
         {
@@ -48,8 +46,7 @@ void tcMatchingEngine::match(tsOrder* apsIncomingOrder)
         }
 
         uint32_t lnTradeQuantity = std::min(apsIncomingOrder->mnRemaining, lpsRestingOrder->mnRemaining);
-        tcMatchingEngine::executeTrade(apsIncomingOrder, lpsRestingOrder, lnTradeQuantity);
-        lpcBestOppositeLevel->executeTrade(lnTradeQuantity);
+        tcMatchingEngine::executeTrade(apsIncomingOrder, lpsRestingOrder, lnTradeQuantity, lpcBestOppositeLevel);
 
         if (lpsRestingOrder->mnRemaining == 0)
         {
@@ -58,10 +55,11 @@ void tcMatchingEngine::match(tsOrder* apsIncomingOrder)
     }
 }
 
-void tcMatchingEngine::executeTrade(tsOrder* apsTaker, tsOrder* apsMaker, uint32_t anQuantity)
+void tcMatchingEngine::executeTrade(tsOrder* apsTaker, tsOrder* apsMaker, uint32_t anQuantity, tcPriceLevel* apcPriceLevel)
 {
     apsTaker->mnRemaining -= anQuantity;
     apsMaker->mnRemaining -= anQuantity;
+    apcPriceLevel->executeTrade(anQuantity);
 
     #ifdef DEBUG
     std::cout << "Trade: " << anQuantity
