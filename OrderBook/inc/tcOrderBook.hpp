@@ -3,8 +3,8 @@
 
 #include "tsOrder.hpp"
 #include "tcPriceLevel.hpp"
+#include "constants.hpp"
 
-#include <iostream>
 #include <unordered_map>
 #include <map>
 
@@ -25,15 +25,9 @@ public:
 
     tcPriceLevel* getBestBid(void);
 
-    const auto& getBids(void) const
-    {
-        return mcBids;
-    }
+    void printOrders(void) const;
 
-    const auto& getAsks(void) const
-    {
-        return mcAsks;
-    }
+    void printOrderBook(uint32_t anDepth = Constants::DEFAULT_PRINT_DEPTH) const;
 
 private:
     std::unordered_map<uint64_t, std::unique_ptr<tsOrder>> mcOrders;

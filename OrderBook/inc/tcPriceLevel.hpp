@@ -27,6 +27,8 @@ public:
 
     void executeTrade(uint32_t anQuantity);
 
+    void printLevel(double arPrice) const;
+
 private:
     tsOrder* mpsHead = nullptr;
     tsOrder* mpsTail = nullptr;

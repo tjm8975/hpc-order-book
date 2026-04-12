@@ -1,5 +1,8 @@
 #include "tcPriceLevel.hpp"
 
+#include <iomanip>
+#include <iostream>
+
 void tcPriceLevel::add(tsOrder* apsOrder)
 {
     apsOrder->mpsPrev = mpsTail;
@@ -49,4 +52,11 @@ void tcPriceLevel::remove(tsOrder* apsOrder)
 void tcPriceLevel::executeTrade(uint32_t anQuantity)
 {
     mnTotalQuantity -= anQuantity;
+}
+
+// =============================================================================
+void tcPriceLevel::printLevel(double arPrice) const
+{
+    std::cout << std::setw(10) << mnTotalQuantity << " @ $" <<
+        std::fixed << std::setprecision(2) << arPrice << std::endl;
 }

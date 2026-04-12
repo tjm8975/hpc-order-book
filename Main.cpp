@@ -5,9 +5,7 @@
 
 #include <iostream>
 #include <sstream>
-#include <iomanip>
 #include <string>
-#include <ranges>
 
 void showHelp()
 {
@@ -15,57 +13,10 @@ void showHelp()
     std::cout << "  buy <quantity> <price> -- Submit a buy order" << std::endl;
     std::cout << "  sell <quantity> <price> - Submit a sell order" << std::endl;
     std::cout << "  cancel <order_id> ------- Cancel an order" << std::endl;
-    std::cout << "  show [depth] ------------ Show the order book (default depth is " << Constants::DEFAULT_PRINT_DEPTH << ")" << std::endl;
+    std::cout << "  show book [depth] ------- Show the order book (default depth is " << Constants::DEFAULT_PRINT_DEPTH << ")" << std::endl;
+    std::cout << "  show orders ------------- Show all active orders (in reverse chronological order)" << std::endl;
     std::cout << "  help -------------------- Show this help message" << std::endl;
     std::cout << "  exit -------------------- Exit the program" << std::endl;
-}
-
-void printLevel(uint32_t anPriceInTicks, const tcPriceLevel& lrcLevel)
-{
-    double lrPrice = anPriceInTicks * Constants::DOLLARS_PER_TICK;
-    std::cout << std::setw(10) << lrcLevel.getTotalQuantity() << " @ $" <<
-        std::fixed << std::setprecision(2) << lrPrice << std::endl;
-}
-
-void printOrderBook(tcOrderBook& lrcOrderBook, uint32_t anDepth = Constants::DEFAULT_PRINT_DEPTH)
-{
-    auto& lrcAsks = lrcOrderBook.getAsks();
-    auto& lrcBids = lrcOrderBook.getBids();
-
-    if (lrcAsks.empty() && lrcBids.empty())
-    {
-        std::cout << "Order book is empty." << std::endl;
-        return;
-    }
-
-    std::cout << "\n======= ORDER BOOK =======\n" << std::endl;
-
-    // Need to reverse asks after finding best levels since they are stored in
-    // ascending order
-    for (const auto& [lnTicks, lrcLevel] : lrcAsks | std::views::take(anDepth) | std::views::reverse)
-    {
-        printLevel(lnTicks, lrcLevel);
-    }
-
-    std::cout << "----------" << std::endl;
-
-    for (const auto& [lnTicks, lrcLevel] : lrcBids | std::views::take(anDepth))
-    {
-        printLevel(lnTicks, lrcLevel);
-    }
-
-    // Show spread and market stock price (midpoint of best bid and ask)
-    uint32_t lnBestAsk = lrcAsks.empty() ? 0 : lrcAsks.begin()->first;
-    uint32_t lnBestBid = lrcBids.empty() ? 0 : lrcBids.begin()->first;
-    if (lnBestAsk > 0 && lnBestBid > 0)
-    {
-        double lrSpread = (lnBestAsk - lnBestBid) * Constants::DOLLARS_PER_TICK;
-        double lrMidpoint = (lnBestAsk + lnBestBid) * 0.5 * Constants::DOLLARS_PER_TICK;
-        std::cout << "\nSpread: $" << std::fixed << std::setprecision(2) << lrSpread << std::endl;
-        std::cout << "Market: $" << std::fixed << std::setprecision(2) << lrMidpoint << std::endl;
-    }
-
-    std::cout << "\n==========================" << std::endl;
 }
 
 int main()
@@ -126,14 +77,23 @@ int main()
         }
         else if (lcCommand == "show")
         {
-            uint32_t lnDepth;
-            if (lcStream >> lnDepth)
+            std::string lcSubCommand;
+            lcStream >> lcSubCommand;
+            if (lcSubCommand == "book")
             {
-                printOrderBook(lcOrderBook, lnDepth);
+                uint32_t lnDepth;
+                if (lcStream >> lnDepth)
+                {
+                    lcOrderBook.printOrderBook(lnDepth);
+                }
+                else
+                {
+                    lcOrderBook.printOrderBook(); // Default depth
+                }
             }
-            else
+            else if (lcSubCommand == "orders")
             {
-                printOrderBook(lcOrderBook); // Default depth
+                lcOrderBook.printOrders();
             }
         }
         else if (lcCommand == "help")
