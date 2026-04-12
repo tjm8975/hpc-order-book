@@ -3,9 +3,12 @@
 #include "tcOrderIntake.hpp"
 #include "constants.hpp"
 
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
+
+uint64_t gnNextId = 1;
 
 void showHelp()
 {
@@ -13,10 +16,113 @@ void showHelp()
     std::cout << "  buy <quantity> <price> -- Submit a buy order" << std::endl;
     std::cout << "  sell <quantity> <price> - Submit a sell order" << std::endl;
     std::cout << "  cancel <order_id> ------- Cancel an order" << std::endl;
+    std::cout << "  load <relative_path> ---- Load commands from a file" << std::endl;
     std::cout << "  show book [depth] ------- Show the order book (default depth is " << Constants::DEFAULT_PRINT_DEPTH << ")" << std::endl;
     std::cout << "  show orders ------------- Show all active orders (in reverse chronological order)" << std::endl;
     std::cout << "  help -------------------- Show this help message" << std::endl;
     std::cout << "  exit -------------------- Exit the program" << std::endl;
+}
+
+void handleCommand(
+    std::istringstream& arcStream,
+    std::string& arcCommand,
+    tcOrderIntake& arcOrderIntake,
+    tcOrderBook& arcOrderBook)
+{
+    if (arcCommand.empty())
+    {
+        return; // Ignore empty input
+    }
+    else if (arcCommand == "buy" || arcCommand == "sell")
+    {
+        uint32_t lnQuantity;
+        double lrPrice;
+
+        if (!(arcStream >> lnQuantity >> lrPrice))
+        {
+            std::cout << "Invalid command format. Usage: buy <quantity> <price> or sell <quantity> <price>" << std::endl;
+            return;
+        }
+
+        bool abIsBuy = (arcCommand == "buy");
+
+        arcOrderIntake.submitOrder(gnNextId++, lnQuantity, lrPrice, abIsBuy);
+    }
+    else if (arcCommand == "cancel")
+    {
+        uint64_t lnId;
+        if (arcStream >> lnId)
+        {
+            if (!arcOrderIntake.cancelOrder(lnId))
+            {
+                std::cout << "Order ID " << lnId << " not found for cancellation." << std::endl;
+            }
+        }
+        else
+        {
+            std::cout << "Invalid command format. Usage: cancel <order_id>" << std::endl;
+        }
+    }
+    else if (arcCommand == "show")
+    {
+        std::string lcSubCommand;
+        arcStream >> lcSubCommand;
+        if (lcSubCommand == "book")
+        {
+            uint32_t lnDepth;
+            if (arcStream >> lnDepth)
+            {
+                arcOrderBook.printOrderBook(lnDepth);
+            }
+            else
+            {
+                arcOrderBook.printOrderBook(); // Default depth
+            }
+        }
+        else if (lcSubCommand == "orders")
+        {
+            arcOrderBook.printOrders();
+        }
+    }
+    else if (arcCommand == "help")
+    {
+        showHelp();
+    }
+    else
+    {
+        std::cout << "Unknown command. Type 'help' for a list of commands." << std::endl;
+    }
+}
+
+void loadCommandsFromFile(
+    std::istringstream& arcStream,
+    tcOrderIntake& arcOrderIntake,
+    tcOrderBook& arcOrderBook)
+{
+    std::string lcFilename;
+    if (arcStream >> lcFilename)
+    {
+        std::ifstream lcFile(lcFilename);
+        if (!lcFile)
+        {
+            std::cout << "Failed to open file: " << lcFilename << std::endl;
+            return;
+        }
+
+        std::string lcFileLine;
+        while (std::getline(lcFile, lcFileLine))
+        {
+            std::istringstream lcFileStream(lcFileLine);
+            std::string lcFileCommand;
+            lcFileStream >> lcFileCommand;
+
+            handleCommand(lcFileStream, lcFileCommand, arcOrderIntake, arcOrderBook);
+        }
+    }
+    else
+    {
+        std::cout << "Invalid command format. Usage: load <relative_path>" << std::endl;
+    }
 }
 
 int main()
@@ -24,8 +130,6 @@ int main()
     tcOrderBook lcOrderBook;
     tcMatchingEngine lcMatchingEngine(lcOrderBook);
     tcOrderIntake lcOrderIntake(lcOrderBook, lcMatchingEngine);
-
-    uint64_t lnNextId = 1;
 
     std::cout << "Simple Order Book CLI" << std::endl;
     std::cout << "Type 'help' for a list of commands." << std::endl;
@@ -45,68 +149,13 @@ int main()
         std::string lcCommand;
         lcStream >> lcCommand;
 
-        if (lcCommand == "buy" || lcCommand == "sell")
+        if (lcCommand == "load")
         {
-            uint32_t lnQuantity;
-            double lrPrice;
-
-            if (!(lcStream >> lnQuantity >> lrPrice))
-            {
-                std::cout << "Invalid command format. Usage: buy <quantity> <price> or sell <quantity> <price>" << std::endl;
-                continue;
-            }
-
-            bool abIsBuy = (lcCommand == "buy");
-
-            lcOrderIntake.submitOrder(lnNextId++, lnQuantity, lrPrice, abIsBuy);
-        }
-        else if (lcCommand == "cancel")
-        {
-            uint64_t lnId;
-            if (lcStream >> lnId)
-            {
-                if (!lcOrderIntake.cancelOrder(lnId))
-                {
-                    std::cout << "Order ID " << lnId << " not found for cancellation." << std::endl;
-                }
-            }
-            else
-            {
-                std::cout << "Invalid command format. Usage: cancel <order_id>" << std::endl;
-            }
-        }
-        else if (lcCommand == "show")
-        {
-            std::string lcSubCommand;
-            lcStream >> lcSubCommand;
-            if (lcSubCommand == "book")
-            {
-                uint32_t lnDepth;
-                if (lcStream >> lnDepth)
-                {
-                    lcOrderBook.printOrderBook(lnDepth);
-                }
-                else
-                {
-                    lcOrderBook.printOrderBook(); // Default depth
-                }
-            }
-            else if (lcSubCommand == "orders")
-            {
-                lcOrderBook.printOrders();
-            }
-        }
-        else if (lcCommand == "help")
-        {
-            showHelp();
-        }
-        else if (lcCommand.empty())
-        {
-            continue; // Ignore empty input
+            loadCommandsFromFile(lcStream, lcOrderIntake, lcOrderBook);
         }
         else
         {
-            std::cout << "Unknown command. Type 'help' for a list of commands." << std::endl;
+            handleCommand(lcStream, lcCommand, lcOrderIntake, lcOrderBook);
         }
     }
 

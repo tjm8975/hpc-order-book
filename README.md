@@ -8,7 +8,8 @@ The focus of this iteration is to:
 
 * Handle market orders
 * Handle order cancelling
-* Allow bulk loading of buy/sell commands when using the CLI
+* Allow bulk loading of commands when using the CLI
+  * See input/example.txt for an example file
 
 ---
 

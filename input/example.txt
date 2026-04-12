@@ -1,0 +1,20 @@
+buy 100 100
+buy 80 105
+buy 110 102
+sell 50 150
+sell 95 130
+sell 170 121
+sell 180 105.1
+
+show book
+show orders
+
+cancel 4
+
+show book
+show orders
+
+sell 105 90
+
+show book
+show orders
