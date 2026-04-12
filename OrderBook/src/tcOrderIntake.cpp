@@ -12,3 +12,8 @@ void tcOrderIntake::submitOrder(uint64_t anId, uint32_t anQuantity, double arPri
     tsOrder* lpsNewOrder = mrcOrderBook.createOrder(anId, anQuantity, arPrice * Constants::TICKS_PER_DOLLAR, abIsBuy);
     mrcMatchingEngine.process(lpsNewOrder);
 }
+
+bool tcOrderIntake::cancelOrder(uint64_t anId)
+{
+    return mrcOrderBook.cancelOrder(anId);
+}

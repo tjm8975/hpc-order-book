@@ -19,6 +19,8 @@ public:
 
     void removeOrder(uint64_t anId, bool abRemoveFromPriceLevel = true);
 
+    bool cancelOrder(uint64_t anId);
+
     tcPriceLevel* getBestAsk(void);
 
     tcPriceLevel* getBestBid(void);

@@ -54,6 +54,18 @@ void tcOrderBook::removeOrder(uint64_t anId, bool abRemoveFromPriceLevel)
     }
 }
 
+bool tcOrderBook::cancelOrder(uint64_t anId)
+{
+    auto lcIter = mcOrders.find(anId);
+    if (lcIter != mcOrders.end())
+    {
+        removeOrder(anId);
+        return true;
+    }
+    
+    return false; // Order ID not found
+}
+
 tcPriceLevel* tcOrderBook::getBestAsk(void)
 {
     if (mcAsks.empty())

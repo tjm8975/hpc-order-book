@@ -11,6 +11,8 @@ public:
 
     void submitOrder(uint64_t anId, uint32_t anQuantity, double arPrice, bool abIsBuy);
 
+    bool cancelOrder(uint64_t anId);
+
 private:
     tcOrderBook& mrcOrderBook;
     tcMatchingEngine& mrcMatchingEngine;

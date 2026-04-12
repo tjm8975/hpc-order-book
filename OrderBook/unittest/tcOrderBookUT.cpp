@@ -206,3 +206,22 @@ TEST(tcOrderBookUT, VerifyRemoveOrder)
         }
     }
 }
+
+TEST(tcOrderBookUT, VerifyCancelOrder)
+{
+    tcOrderBook lcOrderBook;
+    tsOrder* lpsOrder1 = lcOrderBook.createOrder(1, 200, 19, true);
+    lcOrderBook.addOrder(lpsOrder1);
+    tsOrder* lpsOrder2 = lcOrderBook.createOrder(2, 200, 20, false);
+    lcOrderBook.addOrder(lpsOrder2);
+
+    EXPECT_TRUE(lcOrderBook.cancelOrder(1));
+    EXPECT_EQ(tcOrderBookUT::getNumOrders(lcOrderBook), 1);
+    EXPECT_EQ(lcOrderBook.getBestBid(), nullptr); // Best bid was cancelled
+
+    EXPECT_TRUE(lcOrderBook.cancelOrder(2));
+    EXPECT_EQ(tcOrderBookUT::getNumOrders(lcOrderBook), 0);
+    EXPECT_EQ(lcOrderBook.getBestAsk(), nullptr); // Best ask was cancelled
+
+    EXPECT_FALSE(lcOrderBook.cancelOrder(999)); // Non-existent order
+}

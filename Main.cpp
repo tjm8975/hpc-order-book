@@ -14,6 +14,7 @@ void showHelp()
     std::cout << "Commands:" << std::endl;
     std::cout << "  buy <quantity> <price> -- Submit a buy order" << std::endl;
     std::cout << "  sell <quantity> <price> - Submit a sell order" << std::endl;
+    std::cout << "  cancel <order_id> ------- Cancel an order" << std::endl;
     std::cout << "  show [depth] ------------ Show the order book (default depth is " << Constants::DEFAULT_PRINT_DEPTH << ")" << std::endl;
     std::cout << "  help -------------------- Show this help message" << std::endl;
     std::cout << "  exit -------------------- Exit the program" << std::endl;
@@ -107,6 +108,21 @@ int main()
             bool abIsBuy = (lcCommand == "buy");
 
             lcOrderIntake.submitOrder(lnNextId++, lnQuantity, lrPrice, abIsBuy);
+        }
+        else if (lcCommand == "cancel")
+        {
+            uint64_t lnId;
+            if (lcStream >> lnId)
+            {
+                if (!lcOrderIntake.cancelOrder(lnId))
+                {
+                    std::cout << "Order ID " << lnId << " not found for cancellation." << std::endl;
+                }
+            }
+            else
+            {
+                std::cout << "Invalid command format. Usage: cancel <order_id>" << std::endl;
+            }
         }
         else if (lcCommand == "show")
         {
