@@ -1,27 +1,14 @@
-# Order Book – v1
+# Order Book – v2 (WIP)
 
 ## Overview
 
-This branch provides a baseline implementation of a single-symbol order book with limit orders only.
+This branch provides builds upon the baseline implementation from `v1` by introducing a new order type.
 
----
+The focus of this iteration is to:
 
-## Core Functionality
-
-The order book supports:
-
-* Limit order insertion (bid/ask)
-* Price-time priority matching
-* Order matching and trade execution
-* Basic order lifecycle management
-
-### Main Components
-
-* **Order** – Represents an individual order
-* **PriceLevel** – Aggregates orders at a given price
-* **OrderBook** – Maintains bid/ask sides
-* **MatchingEngine** – Handles matching logic
-* **OrderIntake** – Entry point for incoming orders
+* Handle market orders
+* Handle order cancelling
+* Allow bulk loading of buy/sell commands when using the CLI
 
 ---
 
@@ -29,17 +16,17 @@ The order book supports:
 
 ### Latency (nanoseconds)
 
-| Metric | v1   |
-| ------ | ---- |
-| p50    | 110  |
-| p90    | 280  |
-| p99    | 505  |
-| p99.9  | 1569 |
+| Metric | v1   | v2   |
+| ------ | ---- | ---- |
+| p50    | 110  | XXXX |
+| p90    | 280  | XXXX |
+| p99    | 505  | XXXX |
+| p99.9  | 1569 | XXXX |
 
 ---
 
 ### Throughput (millions)
 
-| Metric     | v1    |
-| ---------- | ----- |
-| Orders/sec | 6.624 |
+| Metric     | v1    | v2    |
+| ---------- | ----- | ----- |
+| Orders/sec | 6.624 | X.XXX |
