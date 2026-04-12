@@ -23,7 +23,15 @@ public:
 
     tcPriceLevel* getBestBid(void);
 
-    void printOrderBook(void) const; // For debugging purposes
+    const auto& getBids(void) const
+    {
+        return mcBids;
+    }
+
+    const auto& getAsks(void) const
+    {
+        return mcAsks;
+    }
 
 private:
     std::unordered_map<uint64_t, std::unique_ptr<tsOrder>> mcOrders;

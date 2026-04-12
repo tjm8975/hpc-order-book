@@ -73,22 +73,3 @@ tcPriceLevel* tcOrderBook::getBestBid(void)
 
     return &mcBids.begin()->second;
 }
-
-void tcOrderBook::printOrderBook(void) const
-{
-    #ifdef DEBUG
-    std::cout << "Order Book:" << std::endl;
-
-    std::cout << "Bids:" << std::endl;
-    for (const auto& [price, level] : mcBids)
-    {
-        std::cout << "Price: " << price << ", Total Quantity: " << level.getTotalQuantity() << std::endl;
-    }
-
-    std::cout << "Asks:" << std::endl;
-    for (const auto& [price, level] : mcAsks)
-    {
-        std::cout << "Price: " << price << ", Total Quantity: " << level.getTotalQuantity() << std::endl;
-    }
-    #endif
-}
