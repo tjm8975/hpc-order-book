@@ -35,7 +35,7 @@ Each branch represents a **self-contained evolution** of the system that builds 
 
 ---
 
-## 🧪 Benchmarking Philosophy
+## Benchmarking Philosophy
 
 Every version is evaluated using a **consistent benchmarking framework**:
 
