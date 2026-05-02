@@ -1,4 +1,4 @@
-# Order Book – v2 (WIP)
+# Order Book – v2
 
 ## Overview
 
@@ -13,16 +13,16 @@ The focus of this iteration is to:
 
 ---
 
-## Performance Metrics (10 million orders)
+## Performance Metrics (10 million orders, average across 5 runs)
 
 ### Latency (nanoseconds)
 
 | Metric | v1   | v2   |
 | ------ | ---- | ---- |
-| p50    | 110  | XXXX |
-| p90    | 280  | XXXX |
-| p99    | 505  | XXXX |
-| p99.9  | 1569 | XXXX |
+| p50    | 110  | 112  |
+| p90    | 280  | 289  |
+| p99    | 505  | 530  |
+| p99.9  | 1569 | 1640 |
 
 ---
 
@@ -30,4 +30,14 @@ The focus of this iteration is to:
 
 | Metric     | v1    | v2    |
 | ---------- | ----- | ----- |
-| Orders/sec | 6.624 | X.XXX |
+| Orders/sec | 6.624 | 6.230 |
+
+---
+
+## Takeaways
+
+As expected, the performance of the system is slightly worse now that we have to handle multiple order types.
+
+Although the processing of these order types is very similar and reuse most of the same logic, there is still an extra check necessary when processing the order to determine the type, which explains the performance cost.
+
+More complexity will be added in the next couple of iterations as support for more order types is implemented.

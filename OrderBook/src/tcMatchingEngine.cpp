@@ -4,6 +4,8 @@
 #include <iostream>
 #include <algorithm>
 
+// #define DEBUG
+
 tcMatchingEngine::tcMatchingEngine(tcOrderBook& arcOrderBook) :
     mrcOrderBook(arcOrderBook)
 {
@@ -13,7 +15,7 @@ void tcMatchingEngine::process(tsOrder* apsIncomingOrder)
 {
     tcMatchingEngine::match(apsIncomingOrder);
 
-    if (apsIncomingOrder->mnRemaining > 0)
+    if (apsIncomingOrder->meType == teType::eeLimit && apsIncomingOrder->mnRemaining > 0)
     {
         mrcOrderBook.addOrder(apsIncomingOrder);
     }
@@ -30,7 +32,9 @@ void tcMatchingEngine::match(tsOrder* apsIncomingOrder)
 {
     while (apsIncomingOrder->mnRemaining > 0)
     {
-        tcPriceLevel* lpcBestOppositeLevel = apsIncomingOrder->mbIsBuy ? mrcOrderBook.getBestAsk() : mrcOrderBook.getBestBid();
+        tcPriceLevel* lpcBestOppositeLevel =
+            apsIncomingOrder->mbIsBuy ?
+                mrcOrderBook.getBestAsk() : mrcOrderBook.getBestBid();
 
         if (lpcBestOppositeLevel == nullptr)
         {
@@ -39,14 +43,20 @@ void tcMatchingEngine::match(tsOrder* apsIncomingOrder)
 
         tsOrder* lpsRestingOrder = lpcBestOppositeLevel->getBestOrder();
 
-        if ((apsIncomingOrder->mbIsBuy && apsIncomingOrder->mnPriceInTicks < lpsRestingOrder->mnPriceInTicks) ||
-            (!apsIncomingOrder->mbIsBuy && apsIncomingOrder->mnPriceInTicks > lpsRestingOrder->mnPriceInTicks))
+        if (apsIncomingOrder->meType == teType::eeLimit &&
+            ((apsIncomingOrder->mbIsBuy && apsIncomingOrder->mnPriceInTicks < lpsRestingOrder->mnPriceInTicks) ||
+            (!apsIncomingOrder->mbIsBuy && apsIncomingOrder->mnPriceInTicks > lpsRestingOrder->mnPriceInTicks)))
         {
             break; // Best opposite order is not at a price that can be matched
         }
 
-        uint32_t lnTradeQuantity = std::min(apsIncomingOrder->mnRemaining, lpsRestingOrder->mnRemaining);
-        tcMatchingEngine::executeTrade(apsIncomingOrder, lpsRestingOrder, lnTradeQuantity, lpcBestOppositeLevel);
+        uint32_t lnTradeQuantity =
+            std::min(apsIncomingOrder->mnRemaining, lpsRestingOrder->mnRemaining);
+        tcMatchingEngine::executeTrade(
+            apsIncomingOrder,
+            lpsRestingOrder,
+            lnTradeQuantity,
+            lpcBestOppositeLevel);
 
         if (lpsRestingOrder->mnRemaining == 0)
         {
@@ -55,7 +65,11 @@ void tcMatchingEngine::match(tsOrder* apsIncomingOrder)
     }
 }
 
-void tcMatchingEngine::executeTrade(tsOrder* apsTaker, tsOrder* apsMaker, uint32_t anQuantity, tcPriceLevel* apcPriceLevel)
+void tcMatchingEngine::executeTrade(
+    tsOrder* apsTaker,
+    tsOrder* apsMaker,
+    uint32_t anQuantity,
+    tcPriceLevel* apcPriceLevel)
 {
     apsTaker->mnRemaining -= anQuantity;
     apsMaker->mnRemaining -= anQuantity;

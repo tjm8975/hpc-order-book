@@ -7,9 +7,20 @@ tcOrderIntake::tcOrderIntake(tcOrderBook& arcOrderBook, tcMatchingEngine& arcMat
 {
 }
 
-void tcOrderIntake::submitOrder(uint64_t anId, uint32_t anQuantity, double arPrice, bool abIsBuy)
+void tcOrderIntake::submitOrder(
+    uint64_t anId,
+    uint32_t anQuantity,
+    double arPrice,
+    bool abIsBuy,
+    teType aeType)
 {
-    tsOrder* lpsNewOrder = mrcOrderBook.createOrder(anId, anQuantity, arPrice * Constants::TICKS_PER_DOLLAR, abIsBuy);
+    tsOrder* lpsNewOrder =
+        mrcOrderBook.createOrder(
+            anId,
+            anQuantity,
+            arPrice * Constants::TICKS_PER_DOLLAR,
+            abIsBuy,
+            aeType);
     mrcMatchingEngine.process(lpsNewOrder);
 }
 

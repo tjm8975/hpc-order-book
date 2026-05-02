@@ -18,3 +18,9 @@ sell 105 90
 
 show book
 show orders
+
+buy 200
+sell 90
+
+show book
+show orders

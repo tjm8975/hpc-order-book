@@ -7,9 +7,16 @@
 class tcOrderIntake
 {
 public:
-    tcOrderIntake(tcOrderBook& arcOrderBook, tcMatchingEngine& arcMatchingEngine);
+    tcOrderIntake(
+        tcOrderBook& arcOrderBook,
+        tcMatchingEngine& arcMatchingEngine);
 
-    void submitOrder(uint64_t anId, uint32_t anQuantity, double arPrice, bool abIsBuy);
+    void submitOrder(
+        uint64_t anId,
+        uint32_t anQuantity,
+        double arPrice,
+        bool abIsBuy,
+        teType aeType = teType::eeLimit);
 
     bool cancelOrder(uint64_t anId);
 

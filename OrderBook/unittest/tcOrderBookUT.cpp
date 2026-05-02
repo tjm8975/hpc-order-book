@@ -69,6 +69,7 @@ TEST(tcOrderBookUT, VerifyCreateAndAddOrder)
         EXPECT_EQ(order->mnRemaining, lrsTest.mnExpQuantity);
         EXPECT_EQ(order->mnPriceInTicks, lrsTest.mnExpPriceInTicks);
         EXPECT_EQ(order->mbIsBuy, lrsTest.mbExpIsBuy);
+        EXPECT_EQ(order->meType, teType::eeLimit);
 
         EXPECT_EQ(tcOrderBookUT::getNumOrders(lcOrderBook), lnInitialNumOrders + 1);
         if (lrsTest.mbExpIsBuy)

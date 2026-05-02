@@ -13,7 +13,12 @@ enum class Side { Bid, Ask };
 class tcOrderBook
 {
 public:
-    tsOrder* createOrder(uint64_t anId, uint32_t anQuantity, uint32_t anPriceInTicks, bool abIsBuy);
+    tsOrder* createOrder(
+        uint64_t anId,
+        uint32_t anQuantity,
+        uint32_t anPriceInTicks,
+        bool abIsBuy,
+        teType aeType = teType::eeLimit);
 
     void addOrder(tsOrder* apsOrder);
 

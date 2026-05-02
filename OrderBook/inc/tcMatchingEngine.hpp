@@ -15,7 +15,11 @@ private:
 
     void match(tsOrder* apsIncomingOrder);
 
-    void executeTrade(tsOrder* apsTaker, tsOrder* apsMaker, uint32_t anQuantity, tcPriceLevel* apcPriceLevel);
+    void executeTrade(
+        tsOrder* apsTaker,
+        tsOrder* apsMaker,
+        uint32_t anQuantity,
+        tcPriceLevel* apcPriceLevel);
 
     // Grant access to private members for unit testing
     friend class tcMatchingEngineUT;

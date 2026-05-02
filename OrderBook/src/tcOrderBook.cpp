@@ -4,7 +4,12 @@
 #include <iostream>
 #include <ranges>
 
-tsOrder* tcOrderBook::createOrder(uint64_t anId, uint32_t anQuantity, uint32_t anPriceInTicks, bool abIsBuy)
+tsOrder* tcOrderBook::createOrder(
+    uint64_t anId,
+    uint32_t anQuantity,
+    uint32_t anPriceInTicks,
+    bool abIsBuy,
+    teType aeType)
 {
     auto lpsOrder = std::make_unique<tsOrder>();
     lpsOrder->mnId = anId;
@@ -12,6 +17,7 @@ tsOrder* tcOrderBook::createOrder(uint64_t anId, uint32_t anQuantity, uint32_t a
     lpsOrder->mnRemaining = anQuantity;
     lpsOrder->mnPriceInTicks = anPriceInTicks;
     lpsOrder->mbIsBuy = abIsBuy;
+    lpsOrder->meType = aeType;
 
     tsOrder* lpsOrderPtr = lpsOrder.get();
     mcOrders[anId] = std::move(lpsOrder);

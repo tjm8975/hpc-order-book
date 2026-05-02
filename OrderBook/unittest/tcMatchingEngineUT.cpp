@@ -262,3 +262,127 @@ TEST(tcMatchingEngineUT, VerifyProcessIncomingBuyOrder)
         }
     }
 }
+
+TEST(tcMatchingEngineUT, VerifyProcessMarketOrder)
+{
+    struct tsTestParams
+    {
+        std::string mcDesc;
+
+        uint32_t mnTakerInitialQty;
+        uint32_t mnTradeQty;
+        uint32_t mnExpPriceLevelTotalQty;
+        unsigned mnExpectedRemainingLevels;
+    };
+
+    std::vector<tsTestParams> lcTests = {
+        // Desc                       TakerInitQty   TradeQty   ExpPriceLevelTotalQty   ExpNumLevels
+        {"Full fill",                 100,           100,       10,                     2},
+        {"Partial fill",              200,           155,       0,                      0},
+        {"Fill at multiple levels",   150,           150,       5,                      1},
+    };
+
+    // Test both sell and buy side
+    for (int lnSide = 0; lnSide < 2; lnSide++)
+    {
+        std::cout << (lnSide == 0 ? "Sell" : "Buy") << " Side" << std::endl;
+        bool lbIsIncomingBuy = lnSide;
+        for (const auto& lrsTest : lcTests)
+        {
+            std::cout << "Test: " << lrsTest.mcDesc << std::endl;
+
+            tcOrderBook orderBook;
+            tcMatchingEngine matchingEngine(orderBook);
+
+            tsOrder * lpsOrder1 = nullptr;
+            tsOrder * lpsOrder2 = nullptr;
+            tsOrder * lpsOrder3 = nullptr;
+            tsOrder * lpsOrder4 = nullptr;
+
+            if (lbIsIncomingBuy)
+            {
+                // Populate book with asks (100 @ $9, 10 @ $9.5, 45 @ $10)
+                lpsOrder1 = orderBook.createOrder(1, 100, 900, false);
+                lpsOrder2 = orderBook.createOrder(2, 10, 950, false);
+                lpsOrder3 = orderBook.createOrder(3, 15, 1000, false);
+                lpsOrder4 = orderBook.createOrder(4, 30, 1000, false);
+            }
+            else
+            {
+                // Populate book with asks (100 @ $10, 10 @ $9.5, 45 @ $9)
+                lpsOrder1 = orderBook.createOrder(1, 100, 1000, true);
+                lpsOrder2 = orderBook.createOrder(2, 10, 950, true);
+                lpsOrder3 = orderBook.createOrder(3, 15, 900, true);
+                lpsOrder4 = orderBook.createOrder(4, 30, 900, true);
+            }
+            
+            orderBook.addOrder(lpsOrder1);
+            orderBook.addOrder(lpsOrder2);
+            orderBook.addOrder(lpsOrder3);
+            orderBook.addOrder(lpsOrder4);
+
+            tsOrder* takerOrder =
+                orderBook.createOrder(
+                    5,  // OrderId
+                    lrsTest.mnTakerInitialQty,
+                    0,  // Price (not applicable for market order)
+                    lbIsIncomingBuy,
+                    teType::eeMarket);
+
+            matchingEngine.process(takerOrder);
+
+            // Verify expected number of orders remaining on each side of the book
+            int lnExpNumRemainingBids = lbIsIncomingBuy ? 0 : lrsTest.mnExpectedRemainingLevels;
+            int lnExpNumRemainingAsks = lbIsIncomingBuy ? lrsTest.mnExpectedRemainingLevels : 0;
+            EXPECT_EQ(tcOrderBookUT::getNumBidLevels(orderBook), lnExpNumRemainingBids);
+            EXPECT_EQ(tcOrderBookUT::getNumAskLevels(orderBook), lnExpNumRemainingAsks);
+
+
+            // Verify remaining quantity at new best price level (if any)
+            if (!lbIsIncomingBuy && lrsTest.mnExpectedRemainingLevels > 0)
+            {
+                EXPECT_EQ(orderBook.getBestBid()->getTotalQuantity(), lrsTest.mnExpPriceLevelTotalQty);
+            }
+            else if (lbIsIncomingBuy && lrsTest.mnExpectedRemainingLevels > 0)
+            {
+                EXPECT_EQ(orderBook.getBestAsk()->getTotalQuantity(), lrsTest.mnExpPriceLevelTotalQty);
+            }
+        }
+    }
+}
+
+TEST(tcMatchingEngineUT, VerifyMarketOrderOnEmptyBook)
+{
+    std::vector<int> lcQuantities = {10, 20, 100, 500};
+
+    tcOrderBook lcOrderBook;
+    tcMatchingEngine lcMatchingEngine(lcOrderBook);
+
+    // Test both sell and buy side
+    for (int lnSide = 0; lnSide < 2; lnSide++)
+    {
+        std::cout << (lnSide == 0 ? "Sell" : "Buy") << " Side" << std::endl;
+        bool lbIsIncomingBuy = lnSide;
+
+        for (int lnQty : lcQuantities)
+        {
+            std::cout << "Qty: " << lnQty << std::endl;
+            tsOrder* lpsMarketOrder =
+                lcOrderBook.createOrder(
+                    1,  // OrderId
+                    lnQty,
+                    0,  // Price (not applicable for market order)
+                    lbIsIncomingBuy,
+                    teType::eeMarket);
+
+            lcMatchingEngine.process(lpsMarketOrder);
+
+            // Verify expected number of orders remaining on each side of the book
+            EXPECT_EQ(tcOrderBookUT::getNumBidLevels(lcOrderBook), 0);
+            EXPECT_EQ(tcOrderBookUT::getNumAskLevels(lcOrderBook), 0);
+
+            // Verify no quantity traded
+            EXPECT_EQ(lpsMarketOrder->mnRemaining, lnQty);
+        }
+    }
+}

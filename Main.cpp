@@ -13,8 +13,10 @@ uint64_t gnNextId = 1;
 void showHelp()
 {
     std::cout << "Commands:" << std::endl;
-    std::cout << "  buy <quantity> <price> -- Submit a buy order" << std::endl;
-    std::cout << "  sell <quantity> <price> - Submit a sell order" << std::endl;
+    std::cout << "  buy <quantity> ---------- Submit a Market buy order" << std::endl;
+    std::cout << "  sell <quantity> --------- Submit a Market sell order" << std::endl;
+    std::cout << "  buy <quantity> <price> -- Submit a Limit buy order" << std::endl;
+    std::cout << "  sell <quantity> <price> - Submit a Limit sell order" << std::endl;
     std::cout << "  cancel <order_id> ------- Cancel an order" << std::endl;
     std::cout << "  load <relative_path> ---- Load commands from a file" << std::endl;
     std::cout << "  show book [depth] ------- Show the order book (default depth is " << Constants::DEFAULT_PRINT_DEPTH << ")" << std::endl;
@@ -37,16 +39,31 @@ void handleCommand(
     {
         uint32_t lnQuantity;
         double lrPrice;
+        teType leType = teType::eeLimit;
 
-        if (!(arcStream >> lnQuantity >> lrPrice))
+        if (!(arcStream >> lnQuantity))
         {
-            std::cout << "Invalid command format. Usage: buy <quantity> <price> or sell <quantity> <price>" << std::endl;
+            std::cout << "Invalid command format. Usage: buy <quantity> [price] or sell <quantity> [price]" << std::endl;
             return;
+        }
+
+        if (!(arcStream >> lrPrice))
+        {
+            // Treat as market order
+            leType = teType::eeMarket;
+            lrPrice = 0.0;
         }
 
         bool abIsBuy = (arcCommand == "buy");
 
-        arcOrderIntake.submitOrder(gnNextId++, lnQuantity, lrPrice, abIsBuy);
+        std::cout << "Submitted " << typeToString(leType) << (abIsBuy ? " Buy" : " Sell") << " order for " << lnQuantity << " shares";
+        if (leType == teType::eeLimit)
+        {
+            std::cout <<  " @ $" << lrPrice;
+        }
+        std::cout << std::endl;
+
+        arcOrderIntake.submitOrder(gnNextId++, lnQuantity, lrPrice, abIsBuy, leType);
     }
     else if (arcCommand == "cancel")
     {
@@ -56,6 +73,10 @@ void handleCommand(
             if (!arcOrderIntake.cancelOrder(lnId))
             {
                 std::cout << "Order ID " << lnId << " not found for cancellation." << std::endl;
+            }
+            else
+            {
+                std::cout << "Cancelled order " << lnId << std::endl;
             }
         }
         else
