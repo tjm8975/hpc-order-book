@@ -18,7 +18,8 @@ public:
         uint32_t anQuantity,
         uint32_t anPriceInTicks,
         bool abIsBuy,
-        teType aeType = teType::eeLimit);
+        teOrderType aeOrderType = teOrderType::eeLimit,
+        teExecType aeExecType = teExecType::eeGoodTilCanceled);
 
     void addOrder(tsOrder* apsOrder);
 

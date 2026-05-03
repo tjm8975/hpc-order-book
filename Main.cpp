@@ -23,6 +23,33 @@ void showHelp()
     std::cout << "  exit --------------------------- Exit the program" << std::endl;
 }
 
+bool validateExecutionType(
+    std::string & arcExecString,
+    teExecType & areExecType,
+    teOrderType & areOrderType)
+{
+    if (arcExecString == "gtc")
+    {
+        areExecType = teExecType::eeGoodTilCanceled;
+        if (areOrderType == teOrderType::eeMarket)
+        {
+            std::cout << "ERROR: Good-til-Canceled execution type not supported for Market orders" << std::endl;
+            return false;
+        }
+    }
+    else if (arcExecString == "ioc")
+    {
+        areExecType = teExecType::eeImmediateOrCancel;
+    }
+    else
+    {
+        std::cout << "ERROR: Execution type " << arcExecString << " not found" << std::endl;
+        return false;
+    }
+
+    return true;
+}
+
 void handleCommand(
     std::istringstream& arcStream,
     std::string& arcCommand,
@@ -35,33 +62,40 @@ void handleCommand(
     }
     else if (arcCommand == "buy" || arcCommand == "sell")
     {
+        std::string lcExecString;
         uint32_t lnQuantity;
         double lrPrice;
-        teType leType = teType::eeLimit;
+        teOrderType leOrderType = teOrderType::eeLimit;
+        teExecType leExecType;
 
-        if (!(arcStream >> lnQuantity))
+        if (!(arcStream >> lcExecString) || !(arcStream >> lnQuantity))
         {
-            std::cout << "Invalid command format. Usage: buy <quantity> [price] or sell <quantity> [price]" << std::endl;
+            std::cout << "ERROR: Invalid command format. Usage: buy <exec_type> <quantity> [price] or sell <exec_type> <quantity> [price]" << std::endl;
             return;
         }
 
         if (!(arcStream >> lrPrice))
         {
             // Treat as market order
-            leType = teType::eeMarket;
+            leOrderType = teOrderType::eeMarket;
             lrPrice = 0.0;
+        }
+
+        if (!validateExecutionType(lcExecString, leExecType, leOrderType))
+        {
+            return;
         }
 
         bool abIsBuy = (arcCommand == "buy");
 
-        std::cout << "Submitted " << typeToString(leType) << (abIsBuy ? " Buy" : " Sell") << " order for " << lnQuantity << " shares";
-        if (leType == teType::eeLimit)
+        std::cout << "Submitted " << execTypeToString(leExecType) << " " << orderTypeToString(leOrderType) << (abIsBuy ? " Buy" : " Sell") << " order for " << lnQuantity << " shares";
+        if (leOrderType == teOrderType::eeLimit)
         {
             std::cout <<  " @ $" << lrPrice;
         }
         std::cout << std::endl;
 
-        arcOrderIntake.submitOrder(gnNextId++, lnQuantity, lrPrice, abIsBuy, leType);
+        arcOrderIntake.submitOrder(gnNextId++, lnQuantity, lrPrice, abIsBuy, leOrderType);
     }
     else if (arcCommand == "cancel")
     {

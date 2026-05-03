@@ -327,7 +327,8 @@ TEST(tcMatchingEngineUT, VerifyProcessMarketOrder)
                     lrsTest.mnTakerInitialQty,
                     0,  // Price (not applicable for market order)
                     lbIsIncomingBuy,
-                    teType::eeMarket);
+                    teOrderType::eeMarket,
+                    teExecType::eeImmediateOrCancel);
 
             matchingEngine.process(takerOrder);
 
@@ -373,7 +374,8 @@ TEST(tcMatchingEngineUT, VerifyMarketOrderOnEmptyBook)
                     lnQty,
                     0,  // Price (not applicable for market order)
                     lbIsIncomingBuy,
-                    teType::eeMarket);
+                    teOrderType::eeMarket,
+                    teExecType::eeImmediateOrCancel);
 
             lcMatchingEngine.process(lpsMarketOrder);
 
@@ -384,5 +386,39 @@ TEST(tcMatchingEngineUT, VerifyMarketOrderOnEmptyBook)
             // Verify no quantity traded
             EXPECT_EQ(lpsMarketOrder->mnRemaining, lnQty);
         }
+    }
+}
+
+TEST(tcMatchingEngineUT, VerifyGtcMarketOrderFailure)
+{
+    // Test both sell and buy side
+    for (int lnSide = 0; lnSide < 2; lnSide++)
+    {
+        std::cout << (lnSide == 0 ? "Sell" : "Buy") << " Side" << std::endl;
+        bool lbIsIncomingBuy = lnSide;
+
+        tcOrderBook lcOrderBook;
+        tcMatchingEngine lcMatchingEngine(lcOrderBook);
+
+        // Dummy orders that market order would match on
+        tsOrder * lpsOrder1 = lcOrderBook.createOrder(1, 100, 900, true);
+        tsOrder * lpsOrder2 = lcOrderBook.createOrder(2, 10, 950, false);
+        lcOrderBook.addOrder(lpsOrder1);
+        lcOrderBook.addOrder(lpsOrder2);
+
+        tsOrder* lpsMarketOrder =
+            lcOrderBook.createOrder(
+                3,  // OrderId
+                200,
+                0,  // Price (not applicable for market order)
+                lbIsIncomingBuy,
+                teOrderType::eeMarket,
+                teExecType::eeGoodTilCanceled);
+
+        lcMatchingEngine.process(lpsMarketOrder);
+
+        // Verify expected number of orders remaining on each side of the book
+        EXPECT_EQ(tcOrderBookUT::getNumBidLevels(lcOrderBook), 1);
+        EXPECT_EQ(tcOrderBookUT::getNumAskLevels(lcOrderBook), 1);
     }
 }

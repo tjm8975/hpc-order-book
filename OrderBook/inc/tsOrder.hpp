@@ -4,21 +4,38 @@
 #include <cstdint>
 #include <memory>
 
-enum class teType
+enum class teOrderType
 {
     eeLimit,
     eeMarket,
     eeLast  // Used to find total number of order types (eeLast - 1)
 };
 
-static const std::string TypeStrings[] = {
+enum class teExecType
+{
+    eeGoodTilCanceled,
+    eeImmediateOrCancel,
+    eeLast  // Used to find total number of order types (eeLast - 1)
+};
+
+static const std::string sacOrderTypeStrings[] = {
     "Limit",
     "Market"
 };
 
-static std::string typeToString(teType aeType)
+static const std::string sacExecTypeStrings[] = {
+    "GTC",
+    "IOC"
+};
+
+static std::string orderTypeToString(teOrderType aeOrderType)
 {
-    return TypeStrings[static_cast<int>(aeType)];
+    return sacOrderTypeStrings[static_cast<int>(aeOrderType)];
+};
+
+static std::string execTypeToString(teExecType aeExecType)
+{
+    return sacExecTypeStrings[static_cast<int>(aeExecType)];
 };
 
 struct tsOrder
@@ -28,7 +45,8 @@ struct tsOrder
     uint32_t mnPriceInTicks;
     uint32_t mnRemaining;
     bool mbIsBuy;
-    teType meType;
+    teOrderType meOrderType;
+    teExecType meExecType;
 
     tsOrder* mpsPrev = nullptr;
     tsOrder* mpsNext = nullptr;

@@ -17,7 +17,7 @@ public:
         uint32_t mnQuantity;
         double mrPrice;
         bool mbIsBuy;
-        teType meType;
+        teOrderType meOrderType;
     };
 
     GenOrder generateOrder(uint64_t anId);

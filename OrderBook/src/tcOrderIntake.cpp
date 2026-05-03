@@ -12,7 +12,8 @@ void tcOrderIntake::submitOrder(
     uint32_t anQuantity,
     double arPrice,
     bool abIsBuy,
-    teType aeType)
+    teOrderType aeOrderType,
+    teExecType aeExecType)
 {
     tsOrder* lpsNewOrder =
         mrcOrderBook.createOrder(
@@ -20,7 +21,8 @@ void tcOrderIntake::submitOrder(
             anQuantity,
             arPrice * Constants::TICKS_PER_DOLLAR,
             abIsBuy,
-            aeType);
+            aeOrderType,
+            aeExecType);
     mrcMatchingEngine.process(lpsNewOrder);
 }
 

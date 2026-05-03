@@ -16,7 +16,8 @@ public:
         uint32_t anQuantity,
         double arPrice,
         bool abIsBuy,
-        teType aeType = teType::eeLimit);
+        teOrderType aeOrderType = teOrderType::eeLimit,
+        teExecType aeExecType = teExecType::eeGoodTilCanceled);
 
     bool cancelOrder(uint64_t anId);
 

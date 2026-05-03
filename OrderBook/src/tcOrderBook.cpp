@@ -9,7 +9,8 @@ tsOrder* tcOrderBook::createOrder(
     uint32_t anQuantity,
     uint32_t anPriceInTicks,
     bool abIsBuy,
-    teType aeType)
+    teOrderType aeOrderType,
+    teExecType aeExecType)
 {
     auto lpsOrder = std::make_unique<tsOrder>();
     lpsOrder->mnId = anId;
@@ -17,7 +18,8 @@ tsOrder* tcOrderBook::createOrder(
     lpsOrder->mnRemaining = anQuantity;
     lpsOrder->mnPriceInTicks = anPriceInTicks;
     lpsOrder->mbIsBuy = abIsBuy;
-    lpsOrder->meType = aeType;
+    lpsOrder->meOrderType = aeOrderType;
+    lpsOrder->meExecType = aeExecType;
 
     tsOrder* lpsOrderPtr = lpsOrder.get();
     mcOrders[anId] = std::move(lpsOrder);

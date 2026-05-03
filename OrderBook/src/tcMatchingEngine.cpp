@@ -13,9 +13,19 @@ tcMatchingEngine::tcMatchingEngine(tcOrderBook& arcOrderBook) :
 
 void tcMatchingEngine::process(tsOrder* apsIncomingOrder)
 {
+    if (apsIncomingOrder->meOrderType == teOrderType::eeMarket &&
+        apsIncomingOrder->meExecType == teExecType::eeGoodTilCanceled)
+    {
+        // Not supported, ensures that market orders are not added to book
+        #ifdef DEBUG
+        std::cout << "ERROR: Good-til-Canceled execution type not supported for Market orders" << std::endl;
+        #endif
+        return;
+    }
+
     tcMatchingEngine::match(apsIncomingOrder);
 
-    if (apsIncomingOrder->meType == teType::eeLimit && apsIncomingOrder->mnRemaining > 0)
+    if (apsIncomingOrder->meOrderType == teOrderType::eeLimit && apsIncomingOrder->mnRemaining > 0)
     {
         mrcOrderBook.addOrder(apsIncomingOrder);
     }
@@ -43,7 +53,7 @@ void tcMatchingEngine::match(tsOrder* apsIncomingOrder)
 
         tsOrder* lpsRestingOrder = lpcBestOppositeLevel->getBestOrder();
 
-        if (apsIncomingOrder->meType == teType::eeLimit &&
+        if (apsIncomingOrder->meOrderType == teOrderType::eeLimit &&
             ((apsIncomingOrder->mbIsBuy && apsIncomingOrder->mnPriceInTicks < lpsRestingOrder->mnPriceInTicks) ||
             (!apsIncomingOrder->mbIsBuy && apsIncomingOrder->mnPriceInTicks > lpsRestingOrder->mnPriceInTicks)))
         {
