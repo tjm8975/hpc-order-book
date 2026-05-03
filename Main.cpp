@@ -13,16 +13,14 @@ uint64_t gnNextId = 1;
 void showHelp()
 {
     std::cout << "Commands:" << std::endl;
-    std::cout << "  buy <quantity> ---------- Submit a Market buy order" << std::endl;
-    std::cout << "  sell <quantity> --------- Submit a Market sell order" << std::endl;
-    std::cout << "  buy <quantity> <price> -- Submit a Limit buy order" << std::endl;
-    std::cout << "  sell <quantity> <price> - Submit a Limit sell order" << std::endl;
-    std::cout << "  cancel <order_id> ------- Cancel an order" << std::endl;
-    std::cout << "  load <relative_path> ---- Load commands from a file" << std::endl;
-    std::cout << "  show book [depth] ------- Show the order book (default depth is " << Constants::DEFAULT_PRINT_DEPTH << ")" << std::endl;
-    std::cout << "  show orders ------------- Show all active orders (in reverse chronological order)" << std::endl;
-    std::cout << "  help -------------------- Show this help message" << std::endl;
-    std::cout << "  exit -------------------- Exit the program" << std::endl;
+    std::cout << "  buy <quantity> [price_in_usd] -- Submit a Market buy order. Limit order if price is provided" << std::endl;
+    std::cout << "  sell <quantity> [price_in_usd] - Submit a Market sell order. Limit order if price is provided" << std::endl;
+    std::cout << "  cancel <order_id> -------------- Cancel an order" << std::endl;
+    std::cout << "  load <relative_path> ----------- Load commands from a file" << std::endl;
+    std::cout << "  show book [depth] -------------- Show the order book (default depth is " << Constants::DEFAULT_PRINT_DEPTH << ")" << std::endl;
+    std::cout << "  show orders -------------------- Show all active orders (in reverse chronological order)" << std::endl;
+    std::cout << "  help --------------------------- Show this help message" << std::endl;
+    std::cout << "  exit --------------------------- Exit the program" << std::endl;
 }
 
 void handleCommand(

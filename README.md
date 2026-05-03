@@ -7,6 +7,7 @@ This branch provides builds upon the baseline implementation from `v1` by introd
 The focus of this iteration is to:
 
 * Handle market orders
+  * Implemented as Immediate or Cancel (IOC) orders, so no unfilled quantity is added to book
 * Handle order cancelling
 * Allow bulk loading of commands when using the CLI
   * See input/example.txt for an example file
