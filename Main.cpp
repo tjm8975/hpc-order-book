@@ -13,14 +13,39 @@ uint64_t gnNextId = 1;
 void showHelp()
 {
     std::cout << "Commands:" << std::endl;
-    std::cout << "  buy <quantity> [price_in_usd] -- Submit a Market buy order. Limit order if price is provided" << std::endl;
-    std::cout << "  sell <quantity> [price_in_usd] - Submit a Market sell order. Limit order if price is provided" << std::endl;
-    std::cout << "  cancel <order_id> -------------- Cancel an order" << std::endl;
-    std::cout << "  load <relative_path> ----------- Load commands from a file" << std::endl;
-    std::cout << "  show book [depth] -------------- Show the order book (default depth is " << Constants::DEFAULT_PRINT_DEPTH << ")" << std::endl;
-    std::cout << "  show orders -------------------- Show all active orders (in reverse chronological order)" << std::endl;
-    std::cout << "  help --------------------------- Show this help message" << std::endl;
-    std::cout << "  exit --------------------------- Exit the program" << std::endl;
+    std::cout << "   buy <exec_type> <quantity> [price_in_usd]" << std::endl;
+    std::cout << "      Submit a Market buy order. Limit order if price is provided" << std::endl;
+    std::cout << "      <exec_type> - Order execution constraint" << std::endl;
+    std::cout << "         gtc - Good Til' Canceled" << std::endl;
+    std::cout << "         ioc - Immediate Or Cancel" << std::endl;
+    std::cout << "      <quantity> - Quantity of shares you want to buy" << std::endl;
+    std::cout << "      [price_in_usd] - Optional limit (maximum) price you are willing to pay\n" << std::endl;
+
+    std::cout << "   sell <exec type> <quantity> [price_in_usd]" << std::endl;
+    std::cout << "      Submit a Market sell order. Limit order if price is provided" << std::endl;
+    std::cout << "      <exec_type> - Order execution constraint" << std::endl;
+    std::cout << "         gtc - Good Til' Canceled" << std::endl;
+    std::cout << "         ioc - Immediate Or Cancel" << std::endl;
+    std::cout << "      <quantity> - Quantity of shares you want to sell" << std::endl;
+    std::cout << "      [price_in_usd] - Optional limit (minimum) price you are willing to accept\n" << std::endl;
+
+    std::cout << "   cancel <order_id>" << std::endl;
+    std::cout << "      Cancel the order with specified ID\n" << std::endl;
+
+    std::cout << "   load <relative_path>" << std::endl;
+    std::cout << "      Load commands from a file\n" << std::endl;
+
+    std::cout << "   show book [depth]" << std::endl;
+    std::cout << "      Show the order book (default depth is " << Constants::DEFAULT_PRINT_DEPTH << ")\n" << std::endl;
+
+    std::cout << "   show orders" << std::endl;
+    std::cout << "      Show all active orders (in reverse chronological order)\n" << std::endl;
+
+    std::cout << "   help" << std::endl;
+    std::cout << "      Show this help message\n" << std::endl;
+
+    std::cout << "   exit" << std::endl;
+    std::cout << "      Exit the program\n" << std::endl;
 }
 
 bool validateExecutionType(
@@ -43,7 +68,7 @@ bool validateExecutionType(
     }
     else
     {
-        std::cout << "ERROR: Execution type " << arcExecString << " not found" << std::endl;
+        std::cout << "ERROR: Execution type '" << arcExecString << "' not found" << std::endl;
         return false;
     }
 
@@ -95,7 +120,7 @@ void handleCommand(
         }
         std::cout << std::endl;
 
-        arcOrderIntake.submitOrder(gnNextId++, lnQuantity, lrPrice, abIsBuy, leOrderType);
+        arcOrderIntake.submitOrder(gnNextId++, lnQuantity, lrPrice, abIsBuy, leOrderType, leExecType);
     }
     else if (arcCommand == "cancel")
     {

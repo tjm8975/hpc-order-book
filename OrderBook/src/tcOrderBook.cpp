@@ -98,6 +98,25 @@ tcPriceLevel* tcOrderBook::getBestBid(void)
     return &mcBids.begin()->second;
 }
 
+void tcOrderBook::reset(void)
+{
+    auto lcIter = mcOrders.begin();
+    while (lcIter != mcOrders.end())
+    {
+        tsOrder* lpsOrder = lcIter->second.get();
+        if (lpsOrder->mbIsBuy)
+        {
+            removeFromSide<Side::Bid>(lpsOrder);
+        }
+        else
+        {
+            removeFromSide<Side::Ask>(lpsOrder);
+        }
+
+        lcIter = mcOrders.erase(lcIter);  // Deletes object since it's a unique_ptr
+    }
+}
+
 // =============================================================================
 void tcOrderBook::printOrders(void) const
 {

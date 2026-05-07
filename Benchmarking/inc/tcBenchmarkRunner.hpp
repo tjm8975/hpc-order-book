@@ -13,7 +13,11 @@ class tcBenchmarkRunner
 public:
     tcBenchmarkRunner(tcOrderBook& arcOrderBook, tcMatchingEngine& arcMatchingEngine);
 
+    tsMetrics runOriginalThroughput(uint64_t anNumOrders);
+
     tsMetrics runThroughput(uint64_t anNumOrders);
+
+    tsMetrics runOriginalPercentile(uint64_t anNumOrders);
 
     tsMetrics runPercentile(uint64_t anNumOrders);
 

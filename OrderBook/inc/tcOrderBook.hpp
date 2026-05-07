@@ -31,6 +31,8 @@ public:
 
     tcPriceLevel* getBestBid(void);
 
+    void reset(void);
+
     void printOrders(void) const;
 
     void printOrderBook(uint32_t anDepth = Constants::DEFAULT_PRINT_DEPTH) const;

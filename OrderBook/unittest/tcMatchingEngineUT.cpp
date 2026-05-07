@@ -123,7 +123,7 @@ TEST(tcMatchingEngineUT, VerifyMatchAgainstEmptyBook)
     EXPECT_EQ(lpsSellOrder->mnRemaining, 100); // No match should occur
 }
 
-TEST(tcMatchingEngineUT, VerifyProcessIncomingSellOrder)
+TEST(tcMatchingEngineUT, VerifyProcessIncomingLimitSellOrder)
 {
     struct tsTestParams
     {
@@ -148,52 +148,73 @@ TEST(tcMatchingEngineUT, VerifyProcessIncomingSellOrder)
         {"Multi-level fill 3",     200,           900,         155,       0,                      0,           1},
     };
 
-    for (const auto& lrsTest : lcTests)
+    std::vector<teExecType> lcExecTypes = {
+        teExecType::eeGoodTilCanceled,
+        teExecType::eeImmediateOrCancel,
+    };
+
+    for (teExecType leExecType : lcExecTypes)
     {
-        std::cout << "Test: " << lrsTest.mcDesc << std::endl;
-
-        tcOrderBook orderBook;
-        tcMatchingEngine matchingEngine(orderBook);
-
-        // Populate book with bids (100 @ $10, 10 @ $9.5, 45 @ $9)
-        tsOrder* order1 = orderBook.createOrder(1, 100, 1000, true);
-        tsOrder* order2 = orderBook.createOrder(2, 10, 950, true);
-        tsOrder* order3 = orderBook.createOrder(3, 15, 900, true);
-        tsOrder* order4 = orderBook.createOrder(4, 30, 900, true);
-        orderBook.addOrder(order1);
-        orderBook.addOrder(order2);
-        orderBook.addOrder(order3);
-        orderBook.addOrder(order4);
-
-        tsOrder* takerOrder = orderBook.createOrder(5, lrsTest.mnTakerInitialQty, lrsTest.mnTakerPriceInTicks, false);
-
-        matchingEngine.process(takerOrder);
-
-        // Verify remaining quantity for taker order
-        // NOTE: Order could have been deleted, making takerOrder a dangling
-        // pointer, so avoid quantity check if we expected a full fill
-        if (lrsTest.mnTradeQty < lrsTest.mnTakerInitialQty)
+        std::cout << "Exec Type: " << execTypeToString(leExecType) << std::endl;
+        for (const auto& lrsTest : lcTests)
         {
-            EXPECT_EQ(takerOrder->mnRemaining, lrsTest.mnTakerInitialQty - lrsTest.mnTradeQty);
-        }
+            std::cout << "Test: " << lrsTest.mcDesc << std::endl;
 
-        // Verify expected number of orders remaining on each side of the book
-        EXPECT_EQ(tcOrderBookUT::getNumBidLevels(orderBook), lrsTest.mnExpectedRemainingBidLevels);
-        EXPECT_EQ(tcOrderBookUT::getNumAskLevels(orderBook), lrsTest.mnExpectedRemainingAskLevels);
+            tcOrderBook lcOrderBook;
+            tcMatchingEngine lcMatchingEngine(lcOrderBook);
 
-        // Verify remaining quantity at new best price level (if any)
-        if (lrsTest.mnExpectedRemainingBidLevels > 0)
-        {
-            EXPECT_EQ(orderBook.getBestBid()->getTotalQuantity(), lrsTest.mnExpPriceLevelTotalQty);
-        }
-        else
-        {
-            EXPECT_EQ(orderBook.getBestBid(), nullptr);
+            // Populate book with bids (100 @ $10, 10 @ $9.5, 45 @ $9)
+            tsOrder* lpsOrder1 = lcOrderBook.createOrder(1, 100, 1000, true);
+            tsOrder* lpsOrder2 = lcOrderBook.createOrder(2, 10, 950, true);
+            tsOrder* lpsOrder3 = lcOrderBook.createOrder(3, 15, 900, true);
+            tsOrder* lpsOrder4 = lcOrderBook.createOrder(4, 30, 900, true);
+            lcOrderBook.addOrder(lpsOrder1);
+            lcOrderBook.addOrder(lpsOrder2);
+            lcOrderBook.addOrder(lpsOrder3);
+            lcOrderBook.addOrder(lpsOrder4);
+
+            tsOrder* lpsTakerOrder =
+                lcOrderBook.createOrder(
+                    5,
+                    lrsTest.mnTakerInitialQty,
+                    lrsTest.mnTakerPriceInTicks,
+                    false,
+                    teOrderType::eeLimit,
+                    leExecType);
+
+            lcMatchingEngine.process(lpsTakerOrder);
+
+            // Verify remaining quantity for taker order
+            // NOTE: Order could have been deleted, making takerOrder a dangling
+            // pointer, so avoid quantity check if we expected a full fill
+            if (leExecType == teExecType::eeGoodTilCanceled &&
+                lrsTest.mnTradeQty < lrsTest.mnTakerInitialQty)
+            {
+                EXPECT_EQ(lpsTakerOrder->mnRemaining, lrsTest.mnTakerInitialQty - lrsTest.mnTradeQty);
+            }
+
+            unsigned lnExpNumRemainingAsks =
+                leExecType == teExecType::eeImmediateOrCancel ?
+                    0 : lrsTest.mnExpectedRemainingAskLevels;
+
+            // Verify expected number of orders remaining on each side of the book
+            EXPECT_EQ(tcOrderBookUT::getNumBidLevels(lcOrderBook), lrsTest.mnExpectedRemainingBidLevels);
+            EXPECT_EQ(tcOrderBookUT::getNumAskLevels(lcOrderBook), lnExpNumRemainingAsks);
+
+            // Verify remaining quantity at new best price level (if any)
+            if (lrsTest.mnExpectedRemainingBidLevels > 0)
+            {
+                EXPECT_EQ(lcOrderBook.getBestBid()->getTotalQuantity(), lrsTest.mnExpPriceLevelTotalQty);
+            }
+            else
+            {
+                EXPECT_EQ(lcOrderBook.getBestBid(), nullptr);
+            }
         }
     }
 }
 
-TEST(tcMatchingEngineUT, VerifyProcessIncomingBuyOrder)
+TEST(tcMatchingEngineUT, VerifyProcessIncomingLimitBuyOrder)
 {
     struct tsTestParams
     {
@@ -218,47 +239,68 @@ TEST(tcMatchingEngineUT, VerifyProcessIncomingBuyOrder)
         {"Multi-level fill 3",     200,           1000,        155,       0,                      1,           0},
     };
 
-    for (const auto& lrsTest : lcTests)
+    std::vector<teExecType> lcExecTypes = {
+        teExecType::eeGoodTilCanceled,
+        teExecType::eeImmediateOrCancel,
+    };
+
+    for (teExecType leExecType : lcExecTypes)
     {
-        std::cout << "Test: " << lrsTest.mcDesc << std::endl;
-
-        tcOrderBook orderBook;
-        tcMatchingEngine matchingEngine(orderBook);
-
-        // Populate book with asks (100 @ $9, 10 @ $9.5, 45 @ $10)
-        tsOrder* order1 = orderBook.createOrder(1, 100, 900, false);
-        tsOrder* order2 = orderBook.createOrder(2, 10, 950, false);
-        tsOrder* order3 = orderBook.createOrder(3, 15, 1000, false);
-        tsOrder* order4 = orderBook.createOrder(4, 30, 1000, false);
-        orderBook.addOrder(order1);
-        orderBook.addOrder(order2);
-        orderBook.addOrder(order3);
-        orderBook.addOrder(order4);
-
-        tsOrder* takerOrder = orderBook.createOrder(5, lrsTest.mnTakerInitialQty, lrsTest.mnTakerPriceInTicks, true);
-
-        matchingEngine.process(takerOrder);
-
-        // Verify remaining quantity for taker order
-        // NOTE: Order could have been deleted, making takerOrder a dangling
-        // pointer, so avoid quantity check if we expected a full fill
-        if (lrsTest.mnTradeQty < lrsTest.mnTakerInitialQty)
+        std::cout << "Exec Type: " << execTypeToString(leExecType) << std::endl;
+        for (const auto& lrsTest : lcTests)
         {
-            EXPECT_EQ(takerOrder->mnRemaining, lrsTest.mnTakerInitialQty - lrsTest.mnTradeQty);
-        }
+            std::cout << "Test: " << lrsTest.mcDesc << std::endl;
 
-        // Verify expected number of orders remaining on each side of the book
-        EXPECT_EQ(tcOrderBookUT::getNumBidLevels(orderBook), lrsTest.mnExpectedRemainingBidLevels);
-        EXPECT_EQ(tcOrderBookUT::getNumAskLevels(orderBook), lrsTest.mnExpectedRemainingAskLevels);
+            tcOrderBook lcOrderBook;
+            tcMatchingEngine lcMatchingEngine(lcOrderBook);
 
-        // Verify remaining quantity at new best price level (if any)
-        if (lrsTest.mnExpectedRemainingAskLevels > 0)
-        {
-            EXPECT_EQ(orderBook.getBestAsk()->getTotalQuantity(), lrsTest.mnExpPriceLevelTotalQty);
-        }
-        else
-        {
-            EXPECT_EQ(orderBook.getBestAsk(), nullptr);
+            // Populate book with asks (100 @ $9, 10 @ $9.5, 45 @ $10)
+            tsOrder* lpsOrder1 = lcOrderBook.createOrder(1, 100, 900, false);
+            tsOrder* lpsOrder2 = lcOrderBook.createOrder(2, 10, 950, false);
+            tsOrder* lpsOrder3 = lcOrderBook.createOrder(3, 15, 1000, false);
+            tsOrder* lpsOrder4 = lcOrderBook.createOrder(4, 30, 1000, false);
+            lcOrderBook.addOrder(lpsOrder1);
+            lcOrderBook.addOrder(lpsOrder2);
+            lcOrderBook.addOrder(lpsOrder3);
+            lcOrderBook.addOrder(lpsOrder4);
+
+            tsOrder* lpsTakerOrder =
+                lcOrderBook.createOrder(
+                    5,
+                    lrsTest.mnTakerInitialQty,
+                    lrsTest.mnTakerPriceInTicks,
+                    true,
+                    teOrderType::eeLimit,
+                    leExecType);
+
+            lcMatchingEngine.process(lpsTakerOrder);
+
+            // Verify remaining quantity for taker order
+            // NOTE: Order could have been deleted, making takerOrder a dangling
+            // pointer, so avoid quantity check if we expected a full fill
+            if (leExecType == teExecType::eeGoodTilCanceled &&
+                lrsTest.mnTradeQty < lrsTest.mnTakerInitialQty)
+            {
+                EXPECT_EQ(lpsTakerOrder->mnRemaining, lrsTest.mnTakerInitialQty - lrsTest.mnTradeQty);
+            }
+
+            unsigned lnExpNumRemainingBids =
+                leExecType == teExecType::eeImmediateOrCancel ?
+                    0 : lrsTest.mnExpectedRemainingBidLevels;
+
+            // Verify expected number of orders remaining on each side of the book
+            EXPECT_EQ(tcOrderBookUT::getNumBidLevels(lcOrderBook), lnExpNumRemainingBids);
+            EXPECT_EQ(tcOrderBookUT::getNumAskLevels(lcOrderBook), lrsTest.mnExpectedRemainingAskLevels);
+
+            // Verify remaining quantity at new best price level (if any)
+            if (lrsTest.mnExpectedRemainingAskLevels > 0)
+            {
+                EXPECT_EQ(lcOrderBook.getBestAsk()->getTotalQuantity(), lrsTest.mnExpPriceLevelTotalQty);
+            }
+            else
+            {
+                EXPECT_EQ(lcOrderBook.getBestAsk(), nullptr);
+            }
         }
     }
 }
@@ -270,16 +312,15 @@ TEST(tcMatchingEngineUT, VerifyProcessMarketOrder)
         std::string mcDesc;
 
         uint32_t mnTakerInitialQty;
-        uint32_t mnTradeQty;
         uint32_t mnExpPriceLevelTotalQty;
         unsigned mnExpectedRemainingLevels;
     };
 
     std::vector<tsTestParams> lcTests = {
-        // Desc                       TakerInitQty   TradeQty   ExpPriceLevelTotalQty   ExpNumLevels
-        {"Full fill",                 100,           100,       10,                     2},
-        {"Partial fill",              200,           155,       0,                      0},
-        {"Fill at multiple levels",   150,           150,       5,                      1},
+        // Desc                       TakerInitQty   ExpPriceLevelTotalQty   ExpNumLevels
+        {"Full fill",                 100,           10,                     2},
+        {"Partial fill",              200,           0,                      0},
+        {"Fill at multiple levels",   150,           5,                      1},
     };
 
     // Test both sell and buy side
@@ -291,8 +332,8 @@ TEST(tcMatchingEngineUT, VerifyProcessMarketOrder)
         {
             std::cout << "Test: " << lrsTest.mcDesc << std::endl;
 
-            tcOrderBook orderBook;
-            tcMatchingEngine matchingEngine(orderBook);
+            tcOrderBook lcOrderBook;
+            tcMatchingEngine lcMatchingEngine(lcOrderBook);
 
             tsOrder * lpsOrder1 = nullptr;
             tsOrder * lpsOrder2 = nullptr;
@@ -302,27 +343,27 @@ TEST(tcMatchingEngineUT, VerifyProcessMarketOrder)
             if (lbIsIncomingBuy)
             {
                 // Populate book with asks (100 @ $9, 10 @ $9.5, 45 @ $10)
-                lpsOrder1 = orderBook.createOrder(1, 100, 900, false);
-                lpsOrder2 = orderBook.createOrder(2, 10, 950, false);
-                lpsOrder3 = orderBook.createOrder(3, 15, 1000, false);
-                lpsOrder4 = orderBook.createOrder(4, 30, 1000, false);
+                lpsOrder1 = lcOrderBook.createOrder(1, 100, 900, false);
+                lpsOrder2 = lcOrderBook.createOrder(2, 10, 950, false);
+                lpsOrder3 = lcOrderBook.createOrder(3, 15, 1000, false);
+                lpsOrder4 = lcOrderBook.createOrder(4, 30, 1000, false);
             }
             else
             {
                 // Populate book with asks (100 @ $10, 10 @ $9.5, 45 @ $9)
-                lpsOrder1 = orderBook.createOrder(1, 100, 1000, true);
-                lpsOrder2 = orderBook.createOrder(2, 10, 950, true);
-                lpsOrder3 = orderBook.createOrder(3, 15, 900, true);
-                lpsOrder4 = orderBook.createOrder(4, 30, 900, true);
+                lpsOrder1 = lcOrderBook.createOrder(1, 100, 1000, true);
+                lpsOrder2 = lcOrderBook.createOrder(2, 10, 950, true);
+                lpsOrder3 = lcOrderBook.createOrder(3, 15, 900, true);
+                lpsOrder4 = lcOrderBook.createOrder(4, 30, 900, true);
             }
             
-            orderBook.addOrder(lpsOrder1);
-            orderBook.addOrder(lpsOrder2);
-            orderBook.addOrder(lpsOrder3);
-            orderBook.addOrder(lpsOrder4);
+            lcOrderBook.addOrder(lpsOrder1);
+            lcOrderBook.addOrder(lpsOrder2);
+            lcOrderBook.addOrder(lpsOrder3);
+            lcOrderBook.addOrder(lpsOrder4);
 
-            tsOrder* takerOrder =
-                orderBook.createOrder(
+            tsOrder* lpsTakerOrder =
+                lcOrderBook.createOrder(
                     5,  // OrderId
                     lrsTest.mnTakerInitialQty,
                     0,  // Price (not applicable for market order)
@@ -330,23 +371,23 @@ TEST(tcMatchingEngineUT, VerifyProcessMarketOrder)
                     teOrderType::eeMarket,
                     teExecType::eeImmediateOrCancel);
 
-            matchingEngine.process(takerOrder);
+            lcMatchingEngine.process(lpsTakerOrder);
 
             // Verify expected number of orders remaining on each side of the book
             int lnExpNumRemainingBids = lbIsIncomingBuy ? 0 : lrsTest.mnExpectedRemainingLevels;
             int lnExpNumRemainingAsks = lbIsIncomingBuy ? lrsTest.mnExpectedRemainingLevels : 0;
-            EXPECT_EQ(tcOrderBookUT::getNumBidLevels(orderBook), lnExpNumRemainingBids);
-            EXPECT_EQ(tcOrderBookUT::getNumAskLevels(orderBook), lnExpNumRemainingAsks);
+            EXPECT_EQ(tcOrderBookUT::getNumBidLevels(lcOrderBook), lnExpNumRemainingBids);
+            EXPECT_EQ(tcOrderBookUT::getNumAskLevels(lcOrderBook), lnExpNumRemainingAsks);
 
 
             // Verify remaining quantity at new best price level (if any)
             if (!lbIsIncomingBuy && lrsTest.mnExpectedRemainingLevels > 0)
             {
-                EXPECT_EQ(orderBook.getBestBid()->getTotalQuantity(), lrsTest.mnExpPriceLevelTotalQty);
+                EXPECT_EQ(lcOrderBook.getBestBid()->getTotalQuantity(), lrsTest.mnExpPriceLevelTotalQty);
             }
             else if (lbIsIncomingBuy && lrsTest.mnExpectedRemainingLevels > 0)
             {
-                EXPECT_EQ(orderBook.getBestAsk()->getTotalQuantity(), lrsTest.mnExpPriceLevelTotalQty);
+                EXPECT_EQ(lcOrderBook.getBestAsk()->getTotalQuantity(), lrsTest.mnExpPriceLevelTotalQty);
             }
         }
     }

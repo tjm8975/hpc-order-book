@@ -20,12 +20,14 @@ void tcMatchingEngine::process(tsOrder* apsIncomingOrder)
         #ifdef DEBUG
         std::cout << "ERROR: Good-til-Canceled execution type not supported for Market orders" << std::endl;
         #endif
+        mrcOrderBook.removeOrder(apsIncomingOrder->mnId, false);
         return;
     }
 
     tcMatchingEngine::match(apsIncomingOrder);
 
-    if (apsIncomingOrder->meOrderType == teOrderType::eeLimit && apsIncomingOrder->mnRemaining > 0)
+    if (apsIncomingOrder->meExecType == teExecType::eeGoodTilCanceled &&
+        apsIncomingOrder->mnRemaining > 0)
     {
         mrcOrderBook.addOrder(apsIncomingOrder);
     }

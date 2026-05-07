@@ -3,19 +3,40 @@
 tcOrderGenerator::tcOrderGenerator(uint32_t seed) :
     mcRng(seed),
     mcQuantityDist(1, 100),   // Quantity between 1 and 100
-    mcPriceDist(95.0, 105.0), // Price between 95.0 and 105.0
+    mcPriceDist(100.0, 0.5),  // Average price of 100 with std dev of 0.5, normal distribution
     mcSideDist(0, 1),         // Buy or Sell
-    mcTypeDist(0, static_cast<int>(teOrderType::eeLast) - 1)
+    mcOrderTypeDist(0, static_cast<int>(teOrderType::eeLast) - 1), // Order type
+    mcLimitExecTypeDist(0, static_cast<int>(teExecType::eeLast) - 1), // Exec types for Limit orders
+    mcMarketExecTypeDist(1, static_cast<int>(teExecType::eeLast) - 1) // Exec types for Market orders
 {
 }
 
-tcOrderGenerator::GenOrder tcOrderGenerator::generateOrder(uint64_t anId)
+tcOrderGenerator::tsGenOrder tcOrderGenerator::generateOriginalOrder(uint64_t anId)
 {
-    return GenOrder{
+    return tsGenOrder{
         anId,
         mcQuantityDist(mcRng),
         mcPriceDist(mcRng),
         mcSideDist(mcRng) == 1, // true for buy, false for sell
-        static_cast<teOrderType>(mcTypeDist(mcRng))
+        teOrderType::eeLimit,
+        teExecType::eeGoodTilCanceled
+    };
+}
+
+tcOrderGenerator::tsGenOrder tcOrderGenerator::generateOrder(uint64_t anId)
+{
+    teOrderType leOrderType = static_cast<teOrderType>(mcOrderTypeDist(mcRng));
+    teExecType leExecType =
+        leOrderType == teOrderType::eeLimit ?
+            static_cast<teExecType>(mcLimitExecTypeDist(mcRng)) :
+            static_cast<teExecType>(mcMarketExecTypeDist(mcRng));
+
+    return tsGenOrder{
+        anId,
+        mcQuantityDist(mcRng),
+        mcPriceDist(mcRng),
+        mcSideDist(mcRng) == 1, // true for buy, false for sell
+        leOrderType,
+        leExecType
     };
 }
