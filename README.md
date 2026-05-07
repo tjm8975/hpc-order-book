@@ -18,12 +18,12 @@ The focus of this iteration is to:
 
 ### Limit Order Latency (nanoseconds)
 
-| Metric | v1   | v2   |
-| ------ | ---- | ---- |
-| p50    | 110  | 72   |
-| p90    | 280  | 143  |
-| p99    | 505  | 261  |
-| p99.9  | 1569 | 690  |
+| Metric | v1  | v2  |
+| ------ | --- | --- |
+| p50    | 71  | 72  |
+| p90    | 141 | 143 |
+| p99    | 254 | 261 |
+| p99.9  | 558 | 690 |
 
 ---
 
@@ -31,7 +31,7 @@ The focus of this iteration is to:
 
 | Metric     | v1    | v2    |
 | ---------- | ----- | ----- |
-| Orders/sec | 6.624 | 6.534 |
+| Orders/sec | 7.005 | 6.534 |
 
 ---
 
@@ -59,5 +59,7 @@ The focus of this iteration is to:
 As expected, the performance of the system is slightly worse now that we have to handle multiple order types.
 
 Although the processing of these order types is very similar and reuse most of the same logic, there is still an extra check necessary when processing the order to determine the type, which explains the performance cost.
+
+When running with both Limit and Market orders, the total amount of orders in the book is lower on average, so latencies are lower.
 
 More complexity will be added in the next couple of iterations as support for more order types is implemented.
