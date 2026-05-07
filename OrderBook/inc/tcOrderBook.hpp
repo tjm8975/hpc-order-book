@@ -23,6 +23,8 @@ public:
 
     tcPriceLevel* getBestBid(void);
 
+    void reset(void);
+
     const auto& getBids(void) const
     {
         return mcBids;

@@ -28,9 +28,11 @@ int main()
     {
         lsMetrics = lcRunner.runThroughput(lnSize);
         lsMetrics.print();
+        lcOrderBook.reset();
 
         lsMetrics = lcRunner.runPercentile(lnSize);
         lsMetrics.print();
+        lcOrderBook.reset();
     }
 
     return 0;

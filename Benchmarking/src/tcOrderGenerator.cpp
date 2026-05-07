@@ -2,8 +2,8 @@
 
 tcOrderGenerator::tcOrderGenerator(uint32_t seed) :
     mcRng(seed),
-    mcQuantityDist(1, 100), // Quantity between 1 and 100
-    mcPriceDist(95.0, 105.0), // Price between 95.0 and 105.0
+    mcQuantityDist(1, 100),  // Quantity between 1 and 100
+    mcPriceDist(100.0, 0.5), // Average price of 100 with std dev of 0.5, normal distribution
     mcSideDist(0, 1)
 {
 }

@@ -22,7 +22,7 @@ public:
 private:
     std::mt19937 mcRng;
     std::uniform_int_distribution<uint32_t> mcQuantityDist;
-    std::uniform_real_distribution<double> mcPriceDist;
+    std::normal_distribution<double> mcPriceDist;
     std::uniform_int_distribution<int> mcSideDist;
 };
 

@@ -29,12 +29,12 @@ The order book supports:
 
 ### Latency (nanoseconds)
 
-| Metric | v1   |
-| ------ | ---- |
-| p50    | 110  |
-| p90    | 280  |
-| p99    | 505  |
-| p99.9  | 1569 |
+| Metric | v1  |
+| ------ | --- |
+| p50    | 71  |
+| p90    | 141 |
+| p99    | 254 |
+| p99.9  | 558 |
 
 ---
 
@@ -42,4 +42,4 @@ The order book supports:
 
 | Metric     | v1    |
 | ---------- | ----- |
-| Orders/sec | 6.624 |
+| Orders/sec | 7.005 |
