@@ -16,22 +16,41 @@ The focus of this iteration is to:
 
 ## Performance Metrics (10 million orders, average across 5 runs)
 
-### Latency (nanoseconds)
+### Limit Order Latency (nanoseconds)
 
 | Metric | v1   | v2   |
 | ------ | ---- | ---- |
-| p50    | 110  | 112  |
-| p90    | 280  | 289  |
-| p99    | 505  | 530  |
-| p99.9  | 1569 | 1640 |
+| p50    | 110  | 72   |
+| p90    | 280  | 143  |
+| p99    | 505  | 261  |
+| p99.9  | 1569 | 690  |
 
 ---
 
-### Throughput (millions)
+### Limit Order Throughput (millions)
 
 | Metric     | v1    | v2    |
 | ---------- | ----- | ----- |
-| Orders/sec | 6.624 | 6.230 |
+| Orders/sec | 6.624 | 6.534 |
+
+---
+
+### All Orders Latency (nanoseconds)
+
+| Metric | v2   |
+| ------ | ---- |
+| p50    | 57   |
+| p90    | 108  |
+| p99    | 186  |
+| p99.9  | 283  |
+
+---
+
+### All Orders Throughput (millions)
+
+| Metric     | v2     |
+| ---------- | ------ |
+| Orders/sec | 13.613 |
 
 ---
 
