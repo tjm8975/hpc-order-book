@@ -94,7 +94,13 @@ tsMetrics tcBenchmarkRunner::runOriginalPercentile(uint64_t anNumOrders)
         }
         else
         {
-            mcOrderIntake.submitOrder(lsOrder.mnId, lsOrder.mnQuantity, lsOrder.mrPrice, lsOrder.mbIsBuy);
+            mcOrderIntake.submitOrder(
+                lsOrder.mnId,
+                lsOrder.mnQuantity,
+                lsOrder.mrPrice,
+                lsOrder.mbIsBuy,
+                lsOrder.meOrderType,
+                lsOrder.meExecType);
         }
 
         lsMetrics.mnTotalOrders++;
@@ -133,7 +139,13 @@ tsMetrics tcBenchmarkRunner::runPercentile(uint64_t anNumOrders)
         }
         else
         {
-            mcOrderIntake.submitOrder(lsOrder.mnId, lsOrder.mnQuantity, lsOrder.mrPrice, lsOrder.mbIsBuy);
+            mcOrderIntake.submitOrder(
+                lsOrder.mnId,
+                lsOrder.mnQuantity,
+                lsOrder.mrPrice,
+                lsOrder.mbIsBuy,
+                lsOrder.meOrderType,
+                lsOrder.meExecType);
         }
 
         lsMetrics.mnTotalOrders++;

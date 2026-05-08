@@ -14,7 +14,7 @@ tcMatchingEngine::tcMatchingEngine(tcOrderBook& arcOrderBook) :
 void tcMatchingEngine::process(tsOrder* apsIncomingOrder)
 {
     if (apsIncomingOrder->meOrderType == teOrderType::eeMarket &&
-        apsIncomingOrder->meExecType == teExecType::eeGoodTilCanceled)
+        apsIncomingOrder->meExecType == teExecType::eeGoodTilCanceled) [[unlikely]]
     {
         // Not supported, ensures that market orders are not added to book
         #ifdef DEBUG

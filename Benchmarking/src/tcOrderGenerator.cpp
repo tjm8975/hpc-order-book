@@ -26,10 +26,15 @@ tcOrderGenerator::tsGenOrder tcOrderGenerator::generateOriginalOrder(uint64_t an
 tcOrderGenerator::tsGenOrder tcOrderGenerator::generateOrder(uint64_t anId)
 {
     teOrderType leOrderType = static_cast<teOrderType>(mcOrderTypeDist(mcRng));
-    teExecType leExecType =
-        leOrderType == teOrderType::eeLimit ?
-            static_cast<teExecType>(mcLimitExecTypeDist(mcRng)) :
-            static_cast<teExecType>(mcMarketExecTypeDist(mcRng));
+    teExecType leExecType = teExecType::eeGoodTilCanceled;
+    if (leOrderType == teOrderType::eeLimit)
+    {
+        leExecType = static_cast<teExecType>(mcLimitExecTypeDist(mcRng));
+    }
+    else
+    {
+        leExecType = static_cast<teExecType>(mcMarketExecTypeDist(mcRng));
+    }
 
     return tsGenOrder{
         anId,

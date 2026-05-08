@@ -1,10 +1,10 @@
-buy 100 100
-buy 80 105
-buy 110 102
-sell 50 150
-sell 95 130
-sell 170 121
-sell 180 105.1
+buy gtc 100 100
+buy gtc 80 105
+buy gtc 110 102
+sell gtc 50 150
+sell gtc 95 130
+sell gtc 170 121
+sell gtc 180 105.1
 
 show book
 show orders
@@ -14,13 +14,20 @@ cancel 4
 show book
 show orders
 
-sell 105 90
+sell gtc 105 90
 
 show book
 show orders
 
-buy 200
-sell 90
+buy ioc 200
+sell ioc 90
+
+show book
+show orders
+
+buy ioc 200 120
+buy ioc 200 130
+sell ioc 50 101
 
 show book
 show orders

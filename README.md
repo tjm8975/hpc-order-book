@@ -1,4 +1,4 @@
-# Order Book – v3 (WIP)
+# Order Book – v3
 
 ## Overview
 
@@ -26,12 +26,12 @@ It was also discovered that some improvements could be made to the benchmarking 
 
 ### GTC Limit Order Latency (nanoseconds)
 
-| Metric | v1   | v2   | v3   |
-| ------ | ---- | ---- | ---- |
-| p50    | 110  | 112  | 71   |
-| p90    | 280  | 289  | 141  |
-| p99    | 505  | 530  | 254  |
-| p99.9  | 1569 | 1640 | 538  |
+| Metric | v1  | v2  | v3  |
+| ------ | --- | --- | --- |
+| p50    | 71  | 72  | 73  |
+| p90    | 141 | 143 | 146 |
+| p99    | 254 | 261 | 264 |
+| p99.9  | 558 | 690 | 577 |
 
 ---
 
@@ -39,27 +39,33 @@ It was also discovered that some improvements could be made to the benchmarking 
 
 | Metric     | v1    | v2    | v3    |
 | ---------- | ----- | ----- | ----- |
-| Orders/sec | 6.624 | 6.230 | 6.650 |
+| Orders/sec | 7.005 | 6.534 | 6.811 |
 
 ---
 
 ### All Orders Latency (nanoseconds)
 
-| Metric | v1   | v2   | v3   |
-| ------ | ---- | ---- | ---- |
-| p50    | 110  | 112  | 82   |
-| p90    | 280  | 289  | 173  |
-| p99    | 505  | 530  | 304  |
-| p99.9  | 1569 | 1640 | 698  |
+| Metric | v2  | v3  |
+| ------ | --- | --- |
+| p50    | 57  | 52  |
+| p90    | 108 | 86  |
+| p99    | 186 | 143 |
+| p99.9  | 283 | 230 |
 
 ---
 
 ### All Orders Throughput (millions)
 
-| Metric     | v1    | v2    | v3     |
-| ---------- | ----- | ----- | ------ |
-| Orders/sec | 6.624 | 6.230 | 15.249 |
+| Metric     | v2     | v3     |
+| ---------- | ------ | ------ |
+| Orders/sec | 13.613 | 14.954 |
 
 ---
 
 ## Takeaways
+
+The GTC Limit order throughput and latency is roughly the same as v2. This is expected, since only a single conditional check was added to the matching engine to skip GTC Market orders. As the run progresses, the check likely has no impact as the branch prediction no longer expects that branch to be executed since the benchmark is not passing any invalid GTC Market orders.
+
+The throughput and latency for All Orders is better than in v2, but this is most likely due to the fact that Limit orders can now be IOC, resulting in a shorter book depth.
+
+I am also noticing inconsistencies between runs since I am just running these benchmarks on my desktop. Averaging across 5 runs helps, but there are still some inaccuracies so the metrics should not be taken as exact.
