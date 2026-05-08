@@ -31,3 +31,14 @@ sell ioc 50 101
 
 show book
 show orders
+
+buy fok 100
+sell fok 80 125
+
+show book
+show orders
+
+sell fok 40
+
+show book
+show orders

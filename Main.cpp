@@ -18,6 +18,7 @@ void showHelp()
     std::cout << "      <exec_type> - Order execution constraint" << std::endl;
     std::cout << "         gtc - Good Til' Canceled" << std::endl;
     std::cout << "         ioc - Immediate Or Cancel" << std::endl;
+    std::cout << "         fok - Fill Or Kill" << std::endl;
     std::cout << "      <quantity> - Quantity of shares you want to buy" << std::endl;
     std::cout << "      [price_in_usd] - Optional limit (maximum) price you are willing to pay\n" << std::endl;
 
@@ -26,6 +27,7 @@ void showHelp()
     std::cout << "      <exec_type> - Order execution constraint" << std::endl;
     std::cout << "         gtc - Good Til' Canceled" << std::endl;
     std::cout << "         ioc - Immediate Or Cancel" << std::endl;
+    std::cout << "         fok - Fill Or Kill" << std::endl;
     std::cout << "      <quantity> - Quantity of shares you want to sell" << std::endl;
     std::cout << "      [price_in_usd] - Optional limit (minimum) price you are willing to accept\n" << std::endl;
 
@@ -40,6 +42,9 @@ void showHelp()
 
     std::cout << "   show orders" << std::endl;
     std::cout << "      Show all active orders (in reverse chronological order)\n" << std::endl;
+
+    std::cout << "   reset" << std::endl;
+    std::cout << "      Cancel all active orders and reset the order book\n" << std::endl;
 
     std::cout << "   help" << std::endl;
     std::cout << "      Show this help message\n" << std::endl;
@@ -65,6 +70,10 @@ bool validateExecutionType(
     else if (arcExecString == "ioc")
     {
         areExecType = teExecType::eeImmediateOrCancel;
+    }
+    else if (arcExecString == "fok")
+    {
+        areExecType = teExecType::eeFillOrKill;
     }
     else
     {
@@ -161,6 +170,11 @@ void handleCommand(
         {
             arcOrderBook.printOrders();
         }
+    }
+    else if (arcCommand == "reset")
+    {
+        arcOrderBook.reset();
+        std::cout << "Order book reset. All active orders cancelled." << std::endl;
     }
     else if (arcCommand == "help")
     {

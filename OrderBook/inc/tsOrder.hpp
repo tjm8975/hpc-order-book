@@ -15,6 +15,7 @@ enum class teExecType
 {
     eeGoodTilCanceled,
     eeImmediateOrCancel,
+    eeFillOrKill,
     eeLast  // Used to find total number of order types (eeLast - 1)
 };
 
@@ -25,7 +26,8 @@ static const std::string sacOrderTypeStrings[] = {
 
 static const std::string sacExecTypeStrings[] = {
     "GTC",
-    "IOC"
+    "IOC",
+    "FOK"
 };
 
 static std::string orderTypeToString(teOrderType aeOrderType)

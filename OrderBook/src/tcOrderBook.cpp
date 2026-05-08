@@ -98,6 +98,21 @@ tcPriceLevel* tcOrderBook::getBestBid(void)
     return &mcBids.begin()->second;
 }
 
+bool tcOrderBook::canFullyFill(tsOrder * apsOrder)
+{
+    bool lbCanFullyFill = false;
+    if (apsOrder->mbIsBuy)
+    {
+        lbCanFullyFill = canFullyFillFromSide<Side::Ask>(apsOrder);
+    }
+    else
+    {
+        lbCanFullyFill = canFullyFillFromSide<Side::Bid>(apsOrder);
+    }
+
+    return lbCanFullyFill;
+}
+
 void tcOrderBook::reset(void)
 {
     auto lcIter = mcOrders.begin();

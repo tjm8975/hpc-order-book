@@ -17,11 +17,18 @@ void tcMatchingEngine::process(tsOrder* apsIncomingOrder)
         apsIncomingOrder->meExecType == teExecType::eeGoodTilCanceled) [[unlikely]]
     {
         // Not supported, ensures that market orders are not added to book
-        #ifdef DEBUG
-        std::cout << "ERROR: Good-til-Canceled execution type not supported for Market orders" << std::endl;
-        #endif
         mrcOrderBook.removeOrder(apsIncomingOrder->mnId, false);
         return;
+    }
+
+    // FOK pre-check
+    if (apsIncomingOrder->meExecType == teExecType::eeFillOrKill)
+    {
+        if (!mrcOrderBook.canFullyFill(apsIncomingOrder))
+        {
+            mrcOrderBook.removeOrder(apsIncomingOrder->mnId, false); // kill immediately
+            return;
+        }
     }
 
     tcMatchingEngine::match(apsIncomingOrder);

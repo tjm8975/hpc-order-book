@@ -7,6 +7,7 @@
 
 #include <unordered_map>
 #include <map>
+#include <iostream>
 
 enum class Side { Bid, Ask };
 
@@ -30,6 +31,8 @@ public:
     tcPriceLevel* getBestAsk(void);
 
     tcPriceLevel* getBestBid(void);
+
+    bool canFullyFill(tsOrder* apsOrder);
 
     void reset(void);
 
@@ -76,6 +79,31 @@ private:
                 lrcSide.erase(lcIter);
             }
         }
+    }
+
+    template<Side S>
+    bool canFullyFillFromSide(tsOrder* apsOrder)
+    {
+        uint32_t lnQuantityToFill = apsOrder->mnRemaining;
+        auto & lrcSide = GetSide<S>();
+
+        for (const auto& [lnPrice, lrcLevel] : lrcSide)
+        {
+            if (apsOrder->meOrderType == teOrderType::eeLimit &&
+                ((apsOrder->mbIsBuy && apsOrder->mnPriceInTicks < lnPrice) ||
+                 (!apsOrder->mbIsBuy && apsOrder->mnPriceInTicks > lnPrice)))
+            {
+                break; // Best opposite order is not at a price that can be matched
+            }
+
+            lnQuantityToFill -= std::min(lnQuantityToFill, lrcLevel.getTotalQuantity());
+            if (lnQuantityToFill == 0)
+            {
+                return true; // Found enough quantity to fill the order
+            }
+        }
+
+        return false; // Not enough quantity available to fill the order
     }
 
     // Grant access to private members for unit testing
